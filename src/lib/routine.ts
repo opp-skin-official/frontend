@@ -41,6 +41,8 @@ export function monthDay(isoDate: string | undefined) {
   return `${m}월 ${d}일`;
 }
 
+export const WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];
+
 const TODAY_KEY = ["routine", "today"];
 
 /** 진행 중인 계획이 없으면 null */
