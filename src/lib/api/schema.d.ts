@@ -4,6 +4,86 @@
  */
 
 export interface paths {
+    "/api/care-info/environment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["saveEnvironment"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/skin-survey/assessments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/care-info/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["addAlert"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/skin-survey": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["survey"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/skin-survey/assessments/latest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["latest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ping": {
         parameters: {
             query?: never;
@@ -20,14 +100,147 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/care-info": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/care-info/alerts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteAlert"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        EnvironmentRequest: {
+            /** @enum {string} */
+            washTime: "MORNING_EVENING" | "EVENING_ONLY" | "VARIES" | "NO_FIXED_TIME";
+            /** @enum {string} */
+            outdoorTraining: "ALMOST_DAILY" | "TWO_TO_THREE_PER_WEEK" | "WEEKLY_OR_LESS" | "IRREGULAR";
+            /** @enum {string} */
+            allergyExperience: "YES" | "NO" | "UNKNOWN";
+        };
+        AlertView: {
+            /** Format: int64 */
+            id?: number;
+            target?: string;
+        };
+        CareInfoView: {
+            environment?: components["schemas"]["EnvironmentView"];
+            alerts?: components["schemas"]["AlertView"][];
+        };
+        EnvironmentView: {
+            /** @enum {string} */
+            washTime?: "MORNING_EVENING" | "EVENING_ONLY" | "VARIES" | "NO_FIXED_TIME";
+            /** @enum {string} */
+            outdoorTraining?: "ALMOST_DAILY" | "TWO_TO_THREE_PER_WEEK" | "WEEKLY_OR_LESS" | "IRREGULAR";
+            /** @enum {string} */
+            allergyExperience?: "YES" | "NO" | "UNKNOWN";
+        };
+        SubmitRequest: {
+            /** Format: int32 */
+            version: number;
+            sensitiveConsent?: boolean;
+            answers: {
+                [key: string]: number;
+            };
+        };
+        AssessmentView: {
+            /** Format: int64 */
+            id?: number;
+            typeCode?: string;
+            title?: string;
+            skinTags?: string[];
+            environmentTags?: string[];
+            careStyle?: string;
+            careStyleLabel?: string;
+            axes?: components["schemas"]["AxisView"][];
+            /** Format: date */
+            retestRecommendedAt?: string;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        AxisView: {
+            /** @enum {string} */
+            axis?: "OIL" | "SENSITIVITY" | "PIGMENTATION" | "WT" | "CARE_STYLE";
+            letter?: string;
+            /** Format: double */
+            score?: number;
+            borderline?: boolean;
+        };
+        AlertRequest: {
+            target: string;
+        };
+        OptionView: {
+            /** Format: int32 */
+            position?: number;
+            label?: string;
+        };
+        QuestionView: {
+            /** Format: int32 */
+            number?: number;
+            /** @enum {string} */
+            axis?: "OIL" | "SENSITIVITY" | "PIGMENTATION" | "WT" | "CARE_STYLE";
+            text?: string;
+            image?: boolean;
+            sensitive?: boolean;
+            options?: components["schemas"]["OptionView"][];
+        };
+        SurveyView: {
+            /** Format: int32 */
+            version?: number;
+            questions?: components["schemas"]["QuestionView"][];
+        };
         PingResponse: {
             status?: string;
             /** Format: date-time */
             serverTime?: string;
+        };
+        MeResponse: {
+            /** Format: int64 */
+            id?: number;
+            nickname?: string;
+            profileImageUrl?: string;
         };
     };
     responses: never;
@@ -38,6 +251,118 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    saveEnvironment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnvironmentRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CareInfoView"];
+                };
+            };
+        };
+    };
+    submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AssessmentView"];
+                };
+            };
+        };
+    };
+    addAlert: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlertRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AlertView"];
+                };
+            };
+        };
+    };
+    survey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SurveyView"];
+                };
+            };
+        };
+    };
+    latest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AssessmentView"];
+                };
+            };
+        };
+    };
     ping: {
         parameters: {
             query?: never;
@@ -55,6 +380,66 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["PingResponse"];
                 };
+            };
+        };
+    };
+    me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MeResponse"];
+                };
+            };
+        };
+    };
+    get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CareInfoView"];
+                };
+            };
+        };
+    };
+    deleteAlert: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

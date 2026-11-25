@@ -1,10 +1,12 @@
-import { ServerStatus } from "./server-status";
+import { AppShell } from "@/components/app/app-shell";
+import { BottomTabBar } from "@/components/app/bottom-tab-bar";
+import { HomeView } from "./home-view";
 
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col gap-4 px-5 py-10">
-      <h1 className="text-2xl font-semibold">제대로</h1>
-      <ServerStatus />
-    </main>
+    <AppShell>
+      <HomeView />
+      <BottomTabBar />
+    </AppShell>
   );
 }

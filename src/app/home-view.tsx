@@ -1,0 +1,126 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { Chip } from "@/components/app/chip";
+import { DotList } from "@/components/app/dot-list";
+import { Icon } from "@/components/app/icon";
+import { SectionHeader } from "@/components/app/section-header";
+import { useMe } from "@/lib/auth";
+import { useLatestAssessment } from "@/lib/survey";
+
+/**
+ * Figma "1. 홈"(499:808).
+ * - 나의 집중 관리(루틴 진행률)는 루틴 기능 이후에 붙인다.
+ * - 상담 시작, 추천 상품, 최근 상담은 해당 기능이 생기기 전까지 빈 상태로 보여 준다.
+ */
+export function HomeView() {
+  const me = useMe();
+  const loggedIn = Boolean(me.data);
+
+  return (
+    <main className="flex flex-1 flex-col pb-8">
+      <header className="px-4 pt-10 pb-6">
+        <p className="type-title" data-testid="home-greeting">
+          {me.data ? `안녕하세요, ${me.data.nickname ?? "사용자"}님` : "안녕하세요"}
+          <br />
+          오늘 피부는 어떤 상태인가요?
+        </p>
+        {me.data === null && (
+          <Link href="/login" className="mt-3 inline-block type-body underline">
+            로그인하고 시작하기
+          </Link>
+        )}
+      </header>
+
+      <SectionHeader title="대화 시작하기" />
+      <div className="px-4 pt-3 pb-8">
+        <ConsultCard />
+      </div>
+
+      <SectionHeader title="내 피부 정보" moreHref={loggedIn ? "/profile" : undefined} />
+      <div className="px-4 pt-1 pb-8">
+        {loggedIn ? <SkinInfoCard /> : <EmptyCard text="로그인하면 내 피부 정보를 볼 수 있어요." />}
+      </div>
+
+      <SectionHeader title="추천 상품" />
+      <div className="px-4 pt-1 pb-8">
+        <EmptyCard text="피부 유형에 맞춘 PX 제품 추천을 준비하고 있어요." />
+      </div>
+
+      <SectionHeader title="최근 상담 리스트" />
+      <div className="px-4 pt-1">
+        <EmptyCard text="아직 상담 기록이 없어요." />
+      </div>
+    </main>
+  );
+}
+
+/** 상담 시작 카드. 상담 기능 전까지는 누를 수 없는 상태로 둔다. */
+function ConsultCard() {
+  return (
+    <div
+      aria-disabled
+      className="relative h-[232px] overflow-hidden rounded-card bg-gradient-to-r from-secondary to-brand p-4"
+    >
+      <div className="flex items-start justify-between">
+        <Icon name="chat-start" />
+        <span className="rounded-[11px] bg-surface px-3 py-1 type-caption">준비 중</span>
+      </div>
+      <p className="absolute top-[131px] left-4 type-body text-muted-foreground">
+        AI 비서에게 불편한 점을
+        <br />
+        대화로 편하게 알려주세요.
+      </p>
+      <p className="absolute bottom-[27px] left-4 type-section">상담 시작하기</p>
+      <Image
+        src="/images/home-character.png"
+        alt=""
+        width={160}
+        height={151}
+        className="absolute top-[116px] left-[219px]"
+      />
+    </div>
+  );
+}
+
+function SkinInfoCard() {
+  const { data, isPending } = useLatestAssessment(true);
+  if (isPending) return <EmptyCard text="불러오는 중…" />;
+  if (!data) {
+    return (
+      <Link
+        href="/survey"
+        className="flex items-center justify-between rounded-card bg-surface p-4 shadow-[0_1px_4px_rgba(0,0,0,0.15)]"
+      >
+        <span className="flex flex-col gap-1">
+          <span className="text-[13px] leading-5 font-medium">피부 타입</span>
+          <span className="type-body text-muted-foreground">진단하고 내 피부 유형을 알아보세요</span>
+        </span>
+        <Icon name="arrow-circle" />
+      </Link>
+    );
+  }
+  return (
+    <Link
+      href="/survey/result"
+      className="flex flex-col gap-2 rounded-card bg-surface p-4 shadow-[0_1px_4px_rgba(0,0,0,0.15)]"
+    >
+      <span className="text-[13px] leading-5 font-medium">피부 타입</span>
+      <span className="text-[20px] leading-6 font-medium">
+        <DotList items={[data.title ?? "", data.careStyleLabel ?? ""]} />
+      </span>
+      <span className="flex flex-wrap gap-[11px]">
+        {(data.skinTags ?? []).slice(0, 2).map((t) => (
+          <Chip key={t} variant="dark">{t}</Chip>
+        ))}
+      </span>
+    </Link>
+  );
+}
+
+function EmptyCard({ text }: { text: string }) {
+  return (
+    <p className="rounded-card border border-border bg-surface p-4 type-body text-muted-foreground">{text}</p>
+  );
+}
