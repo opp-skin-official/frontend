@@ -68,6 +68,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/my-products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["myProducts"];
+        put?: never;
+        post: operations["add"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/care-plans": {
         parameters: {
             query?: never;
@@ -164,6 +180,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ping": {
         parameters: {
             query?: never;
@@ -223,6 +271,22 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/my-products/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["remove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -320,6 +384,12 @@ export interface components {
             score?: number;
             borderline?: boolean;
         };
+        MyProductRequest: {
+            /** Format: int64 */
+            productId: number;
+            /** @enum {string} */
+            kind: "OWNED" | "INTEREST";
+        };
         PlanRequest: {
             /** @enum {string} */
             goalType: "VACATION" | "OUTING" | "OVERNIGHT" | "CUSTOM";
@@ -406,10 +476,61 @@ export interface components {
             lastWeekCompleted?: number;
             days?: components["schemas"]["DayView"][];
         };
+        ProductPage: {
+            items?: components["schemas"]["ProductSummary"][];
+            /** Format: int32 */
+            page?: number;
+            hasNext?: boolean;
+        };
+        ProductSummary: {
+            /** Format: int64 */
+            id?: number;
+            brand?: string;
+            name?: string;
+            /** @enum {string} */
+            category?: "CLEANSER" | "TONER" | "LOTION" | "ESSENCE" | "CREAM" | "SUNSCREEN";
+            volume?: string;
+            /** Format: int32 */
+            price?: number;
+            imageUrl?: string;
+            interested?: boolean;
+            owned?: boolean;
+        };
+        Ingredient: {
+            nameKo?: string;
+            inci?: string;
+        };
+        ProductDetail: {
+            /** Format: int64 */
+            id?: number;
+            brand?: string;
+            name?: string;
+            /** @enum {string} */
+            category?: "CLEANSER" | "TONER" | "LOTION" | "ESSENCE" | "CREAM" | "SUNSCREEN";
+            volume?: string;
+            /** Format: int32 */
+            price?: number;
+            summary?: string;
+            recommendation?: string;
+            skinFits?: ("OILY" | "DRY" | "COMBINATION" | "SENSITIVE")[];
+            features?: string[];
+            keyIngredients?: components["schemas"]["Ingredient"][];
+            fullIngredients?: string;
+            imageUrl?: string;
+            interested?: boolean;
+            owned?: boolean;
+        };
         PingResponse: {
             status?: string;
             /** Format: date-time */
             serverTime?: string;
+        };
+        MyProductView: {
+            /** Format: int64 */
+            productId?: number;
+            /** @enum {string} */
+            kind?: "OWNED" | "INTEREST";
+            product?: components["schemas"]["ProductSummary"];
         };
         MeResponse: {
             /** Format: int64 */
@@ -539,6 +660,50 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["AssessmentView"];
                 };
+            };
+        };
+    };
+    myProducts: {
+        parameters: {
+            query?: {
+                kind?: "OWNED" | "INTEREST";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MyProductView"][];
+                };
+            };
+        };
+    };
+    add: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MyProductRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -673,6 +838,55 @@ export interface operations {
             };
         };
     };
+    list_1: {
+        parameters: {
+            query?: {
+                category?: ("CLEANSER" | "TONER" | "LOTION" | "ESSENCE" | "CREAM" | "SUNSCREEN")[];
+                q?: string;
+                skin?: ("OILY" | "DRY" | "COMBINATION" | "SENSITIVE")[];
+                price?: ("UNDER_10K" | "FROM_10K_TO_20K" | "FROM_20K_TO_30K" | "OVER_30K")[];
+                sort?: "RECOMMENDED" | "PRICE_ASC" | "PRICE_DESC";
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductPage"];
+                };
+            };
+        };
+    };
+    detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductDetail"];
+                };
+            };
+        };
+    };
     ping: {
         parameters: {
             query?: never;
@@ -750,6 +964,28 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["CareInfoView"];
                 };
+            };
+        };
+    };
+    remove: {
+        parameters: {
+            query: {
+                kind: "OWNED" | "INTEREST";
+            };
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

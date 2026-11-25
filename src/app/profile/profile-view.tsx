@@ -37,6 +37,9 @@ export function ProfileView() {
           </section>
           <SkinTypeCard />
           <CareInfoCard />
+          <CardLink href="/profile/products" title="MY PRODUCTS">
+            <span className="type-caption text-muted-foreground">구매한 제품과 관심 제품을 모아 봐요.</span>
+          </CardLink>
         </main>
       )}
     </RequireLogin>
