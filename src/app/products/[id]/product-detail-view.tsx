@@ -6,8 +6,9 @@ import { Chip } from "@/components/app/chip";
 import { RequireLogin } from "@/components/app/require-login";
 import { Button } from "@/components/ui/button";
 import { SKIN_OPTIONS, useProductDetail, useToggleMyProduct, won } from "@/lib/products";
+import { ReviewsSection } from "./reviews-section";
 
-/** Figma "제품상세", "제품상세-성분". MY SKIN MATCH와 리뷰는 다음 단계. */
+/** Figma "제품상세", "제품상세-성분". MY SKIN MATCH는 성분 매칭 이후. */
 export function ProductDetailView() {
   return (
     <RequireLogin message="제품을 보려면 로그인이 필요해요.">
@@ -106,6 +107,7 @@ function Content() {
         </Button>
       </div>
       {toggle.isError && <p role="alert" className="px-4 type-caption text-destructive">{toggle.error.message}</p>}
+      <ReviewsSection productId={data.id!} />
     </main>
   );
 }
