@@ -36,6 +36,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/products/{productId}/reviews/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["save_1"];
+        post?: never;
+        delete: operations["delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/care-info/environment": {
         parameters: {
             query?: never;
@@ -196,6 +212,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/products/{productId}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/products/{productId}/review-form": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["form"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/products/{id}": {
         parameters: {
             query?: never;
@@ -327,6 +375,30 @@ export interface components {
             /** @enum {string} */
             skinCondition?: "COMFORT" | "NORMAL" | "UNCOMFORTABLE";
             memo?: string;
+        };
+        ReviewRequest: {
+            /** Format: int32 */
+            rating: number;
+            content: string;
+            /** @enum {string} */
+            skinOption?: "OILY" | "DRY" | "OILY_DRY" | "SENSITIVE" | "COMBINATION";
+            goodTags: string[];
+            badTags: string[];
+        };
+        ReviewView: {
+            /** Format: int64 */
+            id?: number;
+            nickname?: string;
+            /** Format: int32 */
+            rating?: number;
+            content?: string;
+            /** @enum {string} */
+            skinOption?: "OILY" | "DRY" | "OILY_DRY" | "SENSITIVE" | "COMBINATION";
+            goodTags?: string[];
+            badTags?: string[];
+            /** Format: date-time */
+            createdAt?: string;
+            mine?: boolean;
         };
         EnvironmentRequest: {
             /** @enum {string} */
@@ -496,6 +568,21 @@ export interface components {
             interested?: boolean;
             owned?: boolean;
         };
+        ReviewPage: {
+            /** Format: double */
+            average?: number;
+            /** Format: int32 */
+            count?: number;
+            items?: components["schemas"]["ReviewView"][];
+            /** Format: int32 */
+            page?: number;
+            hasNext?: boolean;
+        };
+        ReviewForm: {
+            goodTagOptions?: string[];
+            badTagOptions?: string[];
+            myReview?: components["schemas"]["ReviewView"];
+        };
         Ingredient: {
             nameKo?: string;
             inci?: string;
@@ -612,6 +699,52 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["RecordView"];
                 };
+            };
+        };
+    };
+    save_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewView"];
+                };
+            };
+        };
+    };
+    delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -861,6 +994,52 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ProductPage"];
+                };
+            };
+        };
+    };
+    list_2: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewPage"];
+                };
+            };
+        };
+    };
+    form: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewForm"];
                 };
             };
         };
