@@ -5,9 +5,17 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-surface: var(--surface);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-bubble-user-foreground: var(--bubble-user-foreground);
+  --radius-card: 24px;
+  --radius-panel: 20px;
+  --radius-bubble: 17px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -49,30 +57,37 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* 제대로 디자인 토큰 (Figma "제대로 UI" 변수) */
+  --brand: #d9f0b8; /* 초 */
+  --brand-strong: #abcb7c; /* 진초 */
+  --surface: #fefefe; /* 카드 흰색 */
+  --subtle-foreground: #9b9b9b; /* 별점·보조 숫자 */
+  --bubble-user-foreground: #024619; /* 사용자 말풍선 글자 */
+
+  --background: #f7f8f7; /* 배경흰 */
+  --foreground: #333333; /* 검 */
+  --card: var(--surface);
+  --card-foreground: #333333;
+  --popover: var(--surface);
+  --popover-foreground: #333333;
+  --primary: var(--brand);
+  --primary-foreground: #333333;
+  --secondary: #f1f3f2; /* 라이트 그레이 */
+  --secondary-foreground: #333333;
+  --muted: #f1f3f2;
+  --muted-foreground: #656565; /* 약한 글 */
+  --accent: #f1f3f2;
+  --accent-foreground: #333333;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #e6e6e6; /* 외곽 */
+  --input: #e6e6e6;
+  --ring: var(--brand-strong);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.875rem; /* 14px: 버튼·상품 썸네일 */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -127,4 +142,50 @@
   html {
     @apply font-sans;
   }
+}
+/* 타이포그래피 (Figma 텍스트 스타일) */
+@utility type-title {
+  font-size: 24px;
+  line-height: normal;
+  font-weight: 600;
+}
+@utility type-section {
+  /* 섹션타이틀 */
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 600;
+}
+@utility type-body-strong {
+  /* 본문강조 */
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+}
+@utility type-chat {
+  /* 채팅 대화 */
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+@utility type-body {
+  /* 본문 */
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+@utility type-label {
+  font-size: 13px;
+  line-height: 24px;
+  font-weight: 500;
+}
+@utility type-caption {
+  /* 보조 */
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+@utility type-tab {
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 400;
 }
