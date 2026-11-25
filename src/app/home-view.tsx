@@ -4,14 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { Chip } from "@/components/app/chip";
 import { DotList } from "@/components/app/dot-list";
+import { FocusCard } from "@/components/app/focus-card";
 import { Icon } from "@/components/app/icon";
 import { SectionHeader } from "@/components/app/section-header";
 import { useMe } from "@/lib/auth";
+import { useTodayRoutine } from "@/lib/routine";
 import { useLatestAssessment } from "@/lib/survey";
 
 /**
  * Figma "1. 홈"(499:808).
- * - 나의 집중 관리(루틴 진행률)는 루틴 기능 이후에 붙인다.
+ * - 나의 집중 관리: 진행 중인 관리 계획의 D-day. 없으면 계획 만들기로 안내한다.
  * - 상담 시작, 추천 상품, 최근 상담은 해당 기능이 생기기 전까지 빈 상태로 보여 준다.
  */
 export function HomeView() {
@@ -32,6 +34,15 @@ export function HomeView() {
           </Link>
         )}
       </header>
+
+      {loggedIn && (
+        <>
+          <SectionHeader title="나의 집중 관리" moreHref="/routine" moreLabel="루틴 보기" />
+          <div className="px-4 pt-1 pb-8">
+            <HomeFocus />
+          </div>
+        </>
+      )}
 
       <SectionHeader title="대화 시작하기" />
       <div className="px-4 pt-3 pb-8">
@@ -82,6 +93,12 @@ function ConsultCard() {
       />
     </div>
   );
+}
+
+function HomeFocus() {
+  const { data, isPending } = useTodayRoutine(true);
+  if (isPending) return <EmptyCard text="불러오는 중…" />;
+  return <FocusCard plan={data?.plan} href={data ? "/routine" : "/routine/plan"} />;
 }
 
 function SkinInfoCard() {

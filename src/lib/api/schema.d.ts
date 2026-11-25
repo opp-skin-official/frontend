@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/routine-items/{itemId}/checks/{date}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["check"];
+        post?: never;
+        delete: operations["uncheck"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/care-info/environment": {
         parameters: {
             query?: never;
@@ -30,6 +46,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/care-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createPlan"];
         delete?: never;
         options?: never;
         head?: never;
@@ -84,6 +116,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/routines/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["today"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ping": {
         parameters: {
             query?: never;
@@ -108,6 +156,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/care-plans/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["currentPlan"];
         put?: never;
         post?: never;
         delete?: never;
@@ -208,6 +272,30 @@ export interface components {
             score?: number;
             borderline?: boolean;
         };
+        PlanRequest: {
+            /** @enum {string} */
+            goalType: "VACATION" | "OUTING" | "OVERNIGHT" | "CUSTOM";
+            goalLabel?: string;
+            /** Format: date */
+            targetDate: string;
+            /** @enum {string} */
+            focusGoal: "BASIC_ROUTINE" | "PRODUCT_REACTION" | "SKIN_CHANGE";
+        };
+        PlanView: {
+            /** Format: int64 */
+            id?: number;
+            /** @enum {string} */
+            goalType?: "VACATION" | "OUTING" | "OVERNIGHT" | "CUSTOM";
+            goalLabel?: string;
+            /** @enum {string} */
+            focusGoal?: "BASIC_ROUTINE" | "PRODUCT_REACTION" | "SKIN_CHANGE";
+            /** Format: date */
+            startDate?: string;
+            /** Format: date */
+            targetDate?: string;
+            /** Format: int64 */
+            daysLeft?: number;
+        };
         AlertRequest: {
             target: string;
         };
@@ -231,6 +319,45 @@ export interface components {
             version?: number;
             questions?: components["schemas"]["QuestionView"][];
         };
+        DayView: {
+            /** Format: date */
+            date?: string;
+            /** @enum {string} */
+            status?: "DONE" | "PARTIAL" | "NONE" | "FUTURE" | "OUT_OF_PLAN";
+        };
+        ItemView: {
+            /** Format: int64 */
+            id?: number;
+            /** @enum {string} */
+            timeOfDay?: "MORNING" | "EVENING";
+            title?: string;
+            subtitle?: string;
+            checked?: boolean;
+        };
+        TodayView: {
+            /** Format: date */
+            date?: string;
+            plan?: components["schemas"]["PlanView"];
+            items?: components["schemas"]["ItemView"][];
+            /** Format: int32 */
+            doneCount?: number;
+            week?: components["schemas"]["WeekView"];
+        };
+        WeekView: {
+            /** Format: date */
+            start?: string;
+            /** Format: date */
+            end?: string;
+            /** Format: int32 */
+            scheduled?: number;
+            /** Format: int32 */
+            completed?: number;
+            /** Format: int32 */
+            percent?: number;
+            /** Format: int32 */
+            lastWeekCompleted?: number;
+            days?: components["schemas"]["DayView"][];
+        };
         PingResponse: {
             status?: string;
             /** Format: date-time */
@@ -251,6 +378,48 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: number;
+                date: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    uncheck: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: number;
+                date: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     saveEnvironment: {
         parameters: {
             query?: never;
@@ -295,6 +464,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AssessmentView"];
+                };
+            };
+        };
+    };
+    createPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlanView"];
                 };
             };
         };
@@ -363,6 +556,26 @@ export interface operations {
             };
         };
     };
+    today: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TodayView"];
+                };
+            };
+        };
+    };
     ping: {
         parameters: {
             query?: never;
@@ -399,6 +612,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["MeResponse"];
+                };
+            };
+        };
+    };
+    currentPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlanView"];
                 };
             };
         };
