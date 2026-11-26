@@ -162,12 +162,13 @@ export const conversation: S["ConversationView"] = {
   useSavedProfile: true,
   createdAt: "2026-11-24T19:00:00+09:00",
   messages: [
-    { id: 1, role: "USER", status: "DONE", content: "선크림은 언제 다시 발라요?", createdAt: "2026-11-24T19:00:00+09:00" },
+    { id: 1, role: "USER", status: "DONE", format: "text", content: "선크림은 언제 다시 발라요?", createdAt: "2026-11-24T19:00:00+09:00" },
     {
       id: 2,
       role: "ASSISTANT",
       status: "DONE",
-      content: "야외훈련 중이면 2~3시간마다 다시 바르는 게 좋아요.",
+      format: "markdown",
+      content: "야외훈련 중이면 2~3시간마다 다시 바르는 게 좋아요.\n\n### 실천 팁\n- **땀을 닦은 뒤** 덧바르기",
       actionTips: ["땀을 닦은 뒤 덧바르기"],
       followUpQuestions: [],
       referToClinician: false,
