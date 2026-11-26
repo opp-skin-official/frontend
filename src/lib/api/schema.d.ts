@@ -100,6 +100,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["agreeTerms"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/conversations": {
         parameters: {
             query?: never;
@@ -622,6 +638,9 @@ export interface components {
             /** @enum {string} */
             kind: "OWNED" | "INTEREST";
         };
+        TermsRequest: {
+            version: string;
+        };
         ConversationRequest: {
             useSavedProfile?: boolean;
         };
@@ -916,6 +935,8 @@ export interface components {
             id?: number;
             nickname?: string;
             profileImageUrl?: string;
+            termsAgreed?: boolean;
+            termsVersion?: string;
         };
         ConversationSummary: {
             /** Format: int64 */
@@ -1131,6 +1152,28 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["MyProductRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agreeTerms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TermsRequest"];
             };
         };
         responses: {

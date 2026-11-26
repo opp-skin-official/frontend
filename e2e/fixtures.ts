@@ -1,4 +1,5 @@
 import type { components } from "../src/lib/api/schema";
+import { TERMS_VERSION } from "../src/lib/terms";
 
 /**
  * 스모크 테스트용 가짜 백엔드 데이터. 백엔드 OpenAPI 타입을 그대로 써서, API 모양이 바뀌면 타입 검사에서 걸린다.
@@ -6,7 +7,7 @@ import type { components } from "../src/lib/api/schema";
  */
 type S = components["schemas"];
 
-export const me: S["MeResponse"] = { id: 1, nickname: "테스트병장" };
+export const me: S["MeResponse"] = { id: 1, nickname: "테스트병장", termsAgreed: true, termsVersion: TERMS_VERSION };
 
 export const plan: S["PlanView"] = {
   id: 7,

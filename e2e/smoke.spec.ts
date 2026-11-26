@@ -37,6 +37,63 @@ test.describe("로그인 전", () => {
   });
 });
 
+test.describe("약관 동의 전", () => {
+  test("어느 화면이든 동의 화면으로 보내고, 모두 동의해야 시작할 수 있다", async ({ page }) => {
+    let agreed = false;
+    const posted: unknown[] = [];
+    // 기본 가짜 응답보다 나중에 등록한 규칙이 먼저 적용된다.
+    await page.route(`${API_ORIGIN}/api/me`, (route) =>
+      route.fulfill({
+        status: 200,
+        headers: { "access-control-allow-origin": route.request().headers()["origin"] ?? "*", "access-control-allow-credentials": "true" },
+        json: { ...data.me, termsAgreed: agreed },
+      }),
+    );
+    await page.route(`${API_ORIGIN}/api/me/terms`, async (route) => {
+      const cors = {
+        "access-control-allow-origin": route.request().headers()["origin"] ?? "*",
+        "access-control-allow-credentials": "true",
+        "access-control-allow-methods": "POST",
+        "access-control-allow-headers": "Content-Type,X-XSRF-TOKEN",
+      };
+      if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers: cors });
+      posted.push(route.request().postDataJSON());
+      agreed = true;
+      return route.fulfill({ status: 204, headers: cors });
+    });
+
+    await page.goto("/routine");
+    await expect(page).toHaveURL(/\/agree$/);
+    const start = page.getByRole("button", { name: "동의하고 시작하기" });
+    await expect(start).toBeDisabled();
+
+    await page.getByLabel("[필수] 서비스 이용약관").check();
+    await expect(start).toBeDisabled(); // 필수 하나만으로는 안 된다
+    await page.getByLabel("모두 동의해요").check();
+    await expect(page.getByLabel("[필수] 개인정보 수집·이용")).toBeChecked();
+    await start.click();
+
+    await expect(page).toHaveURL(/\/$/);
+    expect(posted).toEqual([{ version: data.me.termsVersion }]);
+    await expect(page.getByTestId("home-greeting")).toContainText(`${data.me.nickname}님`);
+  });
+
+  test("약관과 개인정보 문서는 동의 전에도 볼 수 있다", async ({ page }) => {
+    await page.route(`${API_ORIGIN}/api/me`, (route) =>
+      route.fulfill({
+        status: 200,
+        headers: { "access-control-allow-origin": route.request().headers()["origin"] ?? "*", "access-control-allow-credentials": "true" },
+        json: { ...data.me, termsAgreed: false },
+      }),
+    );
+    await page.goto("/terms");
+    await expect(page.getByText("의학적 진단이나 치료가 아닙니다").first()).toBeVisible();
+    await page.goto("/privacy");
+    await expect(page.getByText("수집하는 항목").first()).toBeVisible();
+    await expect(page).toHaveURL(/\/privacy$/);
+  });
+});
+
 test.describe("로그인 후", () => {
   test("홈: 인사, 집중 관리, 피부 정보, 추천 상품, 최근 상담", async ({ page }) => {
     await page.goto("/");
