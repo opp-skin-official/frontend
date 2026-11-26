@@ -12,6 +12,7 @@ const ok = (body?: unknown): Reply => ({ status: body === undefined ? 204 : 200,
 /** 로그인한 사용자 기준 기본 응답 (경로는 쿼리 없이 비교) */
 const rules: Rule[] = [
   { method: "GET", path: /^\/api\/me$/, reply: () => ok(data.me) },
+  { method: "DELETE", path: /^\/api\/me$/, reply: () => ok() },
   { method: "GET", path: /^\/api\/routines\/today$/, reply: () => ok(data.today) },
   { method: "GET", path: /^\/api\/care-plans\/current$/, reply: () => ok(data.plan) },
   { method: "GET", path: /^\/api\/progress-records$/, reply: () => ok(data.progressRecords) },

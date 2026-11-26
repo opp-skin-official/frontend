@@ -36,3 +36,18 @@ export function useLogout() {
     onSuccess: () => queryClient.setQueryData(["me"], null),
   });
 }
+
+/** 회원 탈퇴: 서버가 모든 기록을 지우고 로그아웃시킨다(되돌릴 수 없음). 성공하면 화면에 남은 데이터도 비운다. */
+export function useDeleteAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { response } = await api.DELETE("/api/me");
+      if (response.status !== 204) throw new Error("탈퇴하지 못했어요. 잠시 후 다시 시도해 주세요.");
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      queryClient.setQueryData(["me"], null);
+    },
+  });
+}

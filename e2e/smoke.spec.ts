@@ -113,6 +113,20 @@ test.describe("로그인 후", () => {
     await expect(page.getByText(data.assessment.title!).first()).toBeVisible();
   });
 
+  test("설정: 회원 탈퇴는 한 번 더 확인하고, 취소하면 지우지 않는다", async ({ page, api }) => {
+    await page.goto("/settings");
+    await page.getByRole("button", { name: "회원 탈퇴" }).click();
+    await expect(page.getByRole("alertdialog")).toContainText("되돌릴 수 없어요");
+    await page.getByRole("button", { name: "취소" }).click();
+    await expect(page.getByRole("alertdialog")).toBeHidden();
+    expect(api.calls).not.toContain("DELETE /api/me");
+
+    await page.getByRole("button", { name: "회원 탈퇴" }).click();
+    await page.getByRole("button", { name: "탈퇴하기" }).click();
+    await expect(page).toHaveURL(/\/login$/);
+    expect(api.calls).toContain("DELETE /api/me");
+  });
+
   test("관리 정보: 등록한 주의 성분", async ({ page }) => {
     await page.goto("/profile/care-info");
     await expect(page.getByText(data.careInfo.alerts![0].target!).first()).toBeVisible();
