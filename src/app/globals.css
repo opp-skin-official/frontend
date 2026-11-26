@@ -57,7 +57,7 @@
 }
 
 :root {
-  /* 제대로 디자인 토큰 (Figma "제대로 UI" 변수) */
+  /* OPP 디자인 토큰 (Figma "제대로 UI" 변수) */
   --brand: #d9f0b8; /* 초 */
   --brand-strong: #abcb7c; /* 진초 */
   --surface: #fefefe; /* 카드 흰색 */

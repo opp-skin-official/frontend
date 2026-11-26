@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app/app-shell";
 import { TopBar } from "@/components/app/top-bar";
 import { ProductDetailView } from "./product-detail-view";
 
-export const metadata: Metadata = { title: "제품 상세 · 제대로" };
+export const metadata: Metadata = { title: "제품 상세 · OPP" };
 
 export default function ProductDetailPage() {
   return (

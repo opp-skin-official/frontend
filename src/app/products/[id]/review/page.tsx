@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app/app-shell";
 import { TopBar } from "@/components/app/top-bar";
 import { ReviewFormView } from "./review-form";
 
-export const metadata: Metadata = { title: "리뷰 작성 · 제대로" };
+export const metadata: Metadata = { title: "리뷰 작성 · OPP" };
 
 export default function ReviewPage() {
   return (

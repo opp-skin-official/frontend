@@ -4,7 +4,7 @@ import { BottomTabBar } from "@/components/app/bottom-tab-bar";
 import { TopBar } from "@/components/app/top-bar";
 import { SurveyResult } from "./survey-result";
 
-export const metadata: Metadata = { title: "피부 유형 결과 · 제대로" };
+export const metadata: Metadata = { title: "피부 유형 결과 · OPP" };
 
 export default function SurveyResultPage() {
   return (

@@ -4,7 +4,7 @@ import { BottomTabBar } from "@/components/app/bottom-tab-bar";
 import { TopBar } from "@/components/app/top-bar";
 import { RoutineView } from "./routine-view";
 
-export const metadata: Metadata = { title: "루틴 · 제대로" };
+export const metadata: Metadata = { title: "루틴 · OPP" };
 
 export default function RoutinePage() {
   return (

@@ -4,7 +4,7 @@ import { BottomTabBar } from "@/components/app/bottom-tab-bar";
 import { TopBar } from "@/components/app/top-bar";
 import { SettingsView } from "./settings-view";
 
-export const metadata: Metadata = { title: "설정 · 제대로" };
+export const metadata: Metadata = { title: "설정 · OPP" };
 
 export default function SettingsPage() {
   return (
