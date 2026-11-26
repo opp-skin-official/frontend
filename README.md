@@ -13,6 +13,19 @@ npm run dev        # http://localhost:3000
 - `npm run api:gen`: 실행 중인 백엔드(8080)의 OpenAPI 명세로 `src/lib/api/schema.d.ts` 재생성
 - `npm run typecheck` / `npm run lint` / `npm run build`
 
+## 스모크 테스트 (Playwright)
+
+주요 화면(로그인 전 홈·로그인, 홈, 루틴 체크, 제품 목록·상세·리뷰, 상담 시작·리포트, AI 채팅, 설문, 프로필, 관리 정보)이 깨지지 않는지 확인한다. 백엔드·AI 없이 돈다.
+
+```bash
+npx playwright install chromium   # 처음 한 번
+npm run test:e2e                   # 프로덕션 빌드(.next-e2e)를 3100 포트로 띄워 테스트
+```
+
+- 백엔드 응답은 `e2e/fixtures.ts`의 가짜 데이터(백엔드 OpenAPI 타입으로 작성, API가 바뀌면 `typecheck`에서 걸림)를 `e2e/mock-api.ts`가 돌려준다.
+- 가짜 응답이 없는 API를 부르거나 페이지 스크립트 오류가 나면 테스트가 실패한다. 화면에 새 API를 붙이면 `mock-api.ts`에 규칙을 추가한다.
+- PR마다 CI(`e2e` 작업)에서 돈다. 실패하면 Actions 실행 결과의 `playwright-report` 첨부에서 화면 기록(trace)을 볼 수 있다.
+
 ## 배포 (Cloudflare Workers)
 
 [@opennextjs/cloudflare](https://opennext.js.org/cloudflare)로 Next.js를 Workers에서 돌린다. 설정: `wrangler.jsonc`, `open-next.config.ts`.
