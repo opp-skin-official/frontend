@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RequireLogin } from "@/components/app/require-login";
 import { Button } from "@/components/ui/button";
-import { useLogout } from "@/lib/auth";
+import { useState } from "react";
+import { useDeleteAccount, useLogout } from "@/lib/auth";
 
-/** Figma "5 설정"(175:2964) 중 지금 동작하는 항목만: 계정, 내 피부 프로필, 서비스 이용 안내, 로그아웃 */
+/** Figma "5 설정"(175:2964) 중 지금 동작하는 항목만: 계정, 내 피부 프로필, 서비스 이용 안내, 로그아웃, 회원 탈퇴 */
 export function SettingsView() {
   const router = useRouter();
   const logout = useLogout();
@@ -33,8 +34,52 @@ export function SettingsView() {
           >
             로그아웃
           </Button>
+          <DeleteAccount onDeleted={() => router.replace("/login")} />
         </main>
       )}
     </RequireLogin>
+  );
+}
+
+/** 회원 탈퇴: 한 번 더 확인한 뒤 지운다. */
+function DeleteAccount({ onDeleted }: { onDeleted: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const deletion = useDeleteAccount();
+
+  if (!confirming) {
+    return (
+      <button
+        type="button"
+        className="self-center type-caption text-muted-foreground underline"
+        onClick={() => setConfirming(true)}
+      >
+        회원 탈퇴
+      </button>
+    );
+  }
+  return (
+    <section
+      role="alertdialog"
+      aria-labelledby="delete-account-title"
+      className="flex flex-col gap-3 rounded-panel border border-border bg-surface px-[22px] py-5"
+    >
+      <p id="delete-account-title" className="type-body-strong">정말 탈퇴할까요?</p>
+      <p className="type-caption text-muted-foreground">
+        피부 유형 설문, 상담·리포트, AI 채팅, 루틴·경과 기록, 내 제품·리뷰, 주의 성분이 바로 모두 지워지고 되돌릴 수 없어요.
+      </p>
+      {deletion.isError && <p className="type-caption text-destructive">{deletion.error.message}</p>}
+      <div className="grid grid-cols-2 gap-2">
+        <Button variant="secondary" disabled={deletion.isPending} onClick={() => setConfirming(false)}>
+          취소
+        </Button>
+        <Button
+          variant="destructive"
+          disabled={deletion.isPending}
+          onClick={() => deletion.mutate(undefined, { onSuccess: onDeleted })}
+        >
+          {deletion.isPending ? "탈퇴하는 중…" : "탈퇴하기"}
+        </Button>
+      </div>
+    </section>
   );
 }
