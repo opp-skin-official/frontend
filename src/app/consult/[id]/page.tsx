@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "관리 리포트 · OPP" };
 export default function ConsultReportPage() {
   return (
     <AppShell>
-      <TopBar title="관리 리포트" />
+      <TopBar title="MY SKIN CARE PLAN" />
       <ConsultReport />
     </AppShell>
   );

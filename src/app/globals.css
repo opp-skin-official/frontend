@@ -7,6 +7,7 @@
 @theme inline {
   --color-brand: var(--brand);
   --color-brand-strong: var(--brand-strong);
+  --color-caution: var(--caution);
   --color-surface: var(--surface);
   --color-subtle-foreground: var(--subtle-foreground);
   --color-bubble-user-foreground: var(--bubble-user-foreground);
@@ -60,6 +61,7 @@
   /* OPP 디자인 토큰 (Figma "제대로 UI" 변수) */
   --brand: #d9f0b8; /* 초 */
   --brand-strong: #abcb7c; /* 진초 */
+  --caution: #e57373; /* 솔루션 DON'T 점·글자 (Figma 화면에서 본 근사값) */
   --surface: #fefefe; /* 카드 흰색 */
   --subtle-foreground: #9b9b9b; /* 별점·보조 숫자 */
   --bubble-user-foreground: #024619; /* 사용자 말풍선 글자 */

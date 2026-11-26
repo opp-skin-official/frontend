@@ -1,17 +1,25 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Chip } from "@/components/app/chip";
 import { RequireLogin } from "@/components/app/require-login";
-import { SectionHeader } from "@/components/app/section-header";
 import { Button } from "@/components/ui/button";
+import { DotList } from "@/components/app/dot-list";
 import {
+  ACTIVITY_OPTIONS,
+  CHANGE_OPTIONS,
   type ConsultView,
+  DURATION_OPTIONS,
+  KIND_OPTIONS,
+  ONSET_OPTIONS,
   REGION_OPTIONS,
+  SEVERITY_OPTIONS,
   type ReportView,
   type RoutineView,
   labelOf,
+  labelsOf,
   useApplyRoutine,
   useConsultation,
   useRegenerateRoutine,
@@ -20,8 +28,8 @@ import {
 const DEFAULT_NOTICE = "이 안내는 피부 상태 관찰과 일상 관리 참고용이며, 의학적 판단이나 개선 보장이 아니에요.";
 
 /**
- * R-01 관리 리포트: 원인·솔루션(Model A), 도움·주의 성분, 루틴(Model B), 관리 계획 시작.
- * Figma "피부보고1"·"솔루션" 화면은 아직 받지 못해 디자인 시스템 컴포넌트로 구성했다.
+ * R-01 관리 리포트 — Figma "솔루션"(420:2093, MY SKIN CARE PLAN):
+ * TODAY'S SKIN → DO·DON'T → 추천(제품 데이터 전까지 성분) → 루틴(Model B)·관리 시작(U-02, 디자인 밖 추가).
  */
 export function ConsultReport() {
   return (
@@ -41,28 +49,61 @@ function ReportContent() {
 
   const data = consult.data;
   return (
-    <main className="flex flex-1 flex-col pb-10">
-      <header className="flex flex-col gap-2 px-4 pt-10 pb-6">
+    <main className="flex flex-1 flex-col gap-4 px-4 pt-6 pb-10">
+      {data.followsId != null && (
         <p className="type-caption text-muted-foreground">
-          {data.createdAt ? new Date(data.createdAt).toLocaleDateString("ko-KR", { month: "long", day: "numeric" }) : ""} 상담
+          지난 상담을 이어서 지금 상황에 맞게 루틴을 다시 만들었어요.{" "}
+          <Link href={`/consult/${data.followsId}`} className="underline">지난 리포트 보기</Link>
         </p>
-        <h2 className="type-title">{data.state === "REFERRED" ? "먼저 의료진 상담이 필요해요" : "이렇게 관리해 보세요"}</h2>
-        <p className="type-body text-muted-foreground">{data.title}</p>
-        {data.followsId != null && (
-          <p className="type-caption text-muted-foreground">
-            지난 상담을 이어서 지금 상황에 맞게 루틴을 다시 만들었어요.{" "}
-            <Link href={`/consult/${data.followsId}`} className="underline">지난 리포트 보기</Link>
-          </p>
-        )}
-      </header>
+      )}
+      <TodaysSkin consult={data} />
       {data.state === "REFERRED" || !data.report ? <Referral /> : <Report consult={data} report={data.report} />}
     </main>
   );
 }
 
+/** Figma "TODAY'S SKIN": 얼굴 · 고민 제목 · 증상·시작·활동 · 진단 아님 안내 */
+function TodaysSkin({ consult }: { consult: ConsultView }) {
+  const a = consult.answers;
+  const date = consult.createdAt
+    ? new Date(consult.createdAt).toLocaleDateString("ko-KR", { month: "long", day: "numeric" })
+    : "";
+  const activities = labelsOf(ACTIVITY_OPTIONS, a?.activities);
+  const pair = consult.report?.pairs?.[0];
+  return (
+    <section aria-label="오늘의 피부" className="flex flex-col gap-3 rounded-panel border border-border bg-secondary px-5 pt-5 pb-4">
+      <div className="flex items-baseline justify-between">
+        <h2 className="type-body-strong">TODAY&apos;S SKIN</h2>
+        <span className="type-caption text-muted-foreground">{date}</span>
+      </div>
+      <div className="flex gap-4">
+        <div className="flex size-[90px] shrink-0 items-end justify-center overflow-hidden rounded-[10px] border border-border bg-surface">
+          <Image src="/images/consult-face.png" alt="" width={72} height={79} />
+        </div>
+        <div className="flex min-w-0 flex-col gap-1">
+          <p className="type-body-strong">
+            {labelsOf(REGION_OPTIONS, a?.regions).join("·")} {labelOf(KIND_OPTIONS, a?.kind)}
+          </p>
+          <p className="type-body text-muted-foreground">
+            <DotList items={[labelOf(SEVERITY_OPTIONS, a?.severity), labelOf(CHANGE_OPTIONS, a?.change)].filter(Boolean)} />
+          </p>
+          <p className="type-body text-muted-foreground">
+            {labelOf(ONSET_OPTIONS, a?.onset)} · {labelOf(DURATION_OPTIONS, a?.duration)}
+          </p>
+          {activities.length > 0 && <p className="type-body text-muted-foreground">최근 {activities.join(" 및 ")}</p>}
+        </div>
+      </div>
+      {pair?.observation && <p className="type-body">{pair.observation}</p>}
+      <p className="text-center type-caption text-subtle-foreground">
+        상담 내용을 요약한 참고 정보이며, 질환을 확정하는 진단 결과는 아닙니다.
+      </p>
+    </section>
+  );
+}
+
 function Referral() {
   return (
-    <div className="flex flex-col gap-4 px-4">
+    <div className="flex flex-col gap-4">
       <section className="rounded-panel bg-brand px-5 py-5">
         <p className="type-body-strong">가까운 의무대나 의료기관에 바로 상담해 주세요.</p>
         <p className="mt-2 type-body">
@@ -75,83 +116,63 @@ function Referral() {
   );
 }
 
-function regionsLabel(regions: string[] | undefined) {
-  return (regions ?? []).map((r) => labelOf(REGION_OPTIONS, r as never) || r).join("·");
-}
-
 function Report({ consult, report }: { consult: ConsultView; report: ReportView }) {
   const pairs = report.pairs ?? [];
   const recommended = report.recommendedIngredients ?? [];
   const caution = report.cautionIngredients ?? [];
+  const dos = pairs.map((p) => p.solution).filter((t): t is string => !!t);
+  // 모델 A는 "피할 행동"을 따로 주지 않아, 주의가 필요한 성분을 피할 행동으로 보여 준다(R09: 단정하지 않는 표현).
+  const donts = caution.map((g) => `${g.labelKo ?? g.key} 주의하기`);
+  const causes = pairs.map((p) => p.cause).filter((t): t is string => !!t);
   return (
     <>
-      <SectionHeader title="원인과 관리 방법" />
-      <div className="flex flex-col gap-3 px-4 pt-1 pb-8">
-        {pairs.length === 0 && (
-          <p className="rounded-panel border border-border bg-surface p-4 type-body text-muted-foreground">
-            근거가 충분한 안내를 찾지 못했어요. 증상이 계속되면 의무대나 의료기관에 상담해 주세요.
-          </p>
+      <section aria-label="관리 방법" className="flex flex-col gap-5 rounded-panel border border-border bg-secondary px-5 py-5">
+        <ActionList kind="do" items={dos.length > 0 ? dos : ["근거가 충분한 안내를 찾지 못했어요. 증상이 계속되면 의무대나 의료기관에 상담해 주세요."]} />
+        {donts.length > 0 && <ActionList kind="dont" items={donts} />}
+        {causes.length > 0 && (
+          <p className="type-caption text-muted-foreground">원인 참고: {causes.join(" ")}</p>
         )}
-        {pairs.map((p, i) => (
-          <section key={i} className="flex flex-col gap-3 rounded-panel border border-border bg-surface px-5 py-5">
-            {p.regions && p.regions.length > 0 && <Chip variant="brand" className="w-fit">{regionsLabel(p.regions)}</Chip>}
-            <Row label="지금 상태" text={p.observation} />
-            <Row label="원인" text={p.cause} />
-            <Row label="이렇게 해 보세요" text={p.solution} strong />
-          </section>
-        ))}
-        {report.referToClinician && (
-          <p className="rounded-panel bg-brand px-5 py-4 type-body">
-            {report.referralNotice ?? "일부 항목은 전문가 확인이 권장돼요. 가까운 의무대나 의료기관에 상담해 주세요."}
-          </p>
-        )}
-      </div>
-
-      {(recommended.length > 0 || caution.length > 0) && (
-        <>
-          <SectionHeader title="성분 참고" />
-          <div className="flex flex-col gap-4 px-4 pt-1 pb-8">
-            {recommended.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <p className="type-body-strong">도움이 될 수 있는 성분</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {recommended.map((g) => <Chip key={g.key} variant="brand">{g.labelKo ?? g.key}</Chip>)}
-                </div>
-              </div>
-            )}
-            {caution.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <p className="type-body-strong">주의가 필요한 성분</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {caution.map((g) => <Chip key={g.key} variant="outline">{g.labelKo ?? g.key}</Chip>)}
-                </div>
-              </div>
-            )}
-          </div>
-        </>
+      </section>
+      {report.referToClinician && (
+        <p className="rounded-panel bg-brand px-5 py-4 type-body">
+          {report.referralNotice ?? "일부 항목은 전문가 확인이 권장돼요. 가까운 의무대나 의료기관에 상담해 주세요."}
+        </p>
       )}
 
-      <SectionHeader title="추천 루틴" />
-      <div className="px-4 pt-1 pb-6">
-        {report.routine ? (
-          <Routine routine={report.routine} />
-        ) : (
-          <RoutineMissing id={consult.id!} />
-        )}
-      </div>
+      {recommended.length > 0 && (
+        <section aria-label="추천 성분" className="flex flex-col gap-3 pt-2">
+          <h2 className="type-body-strong">추천 성분</h2>
+          <div className="flex flex-wrap gap-1.5">
+            {recommended.map((g) => <Chip key={g.key} variant="outline">{g.labelKo ?? g.key}</Chip>)}
+          </div>
+          <p className="type-caption text-muted-foreground">PX 제품 추천은 제품 정보가 준비되면 보여 드릴게요.</p>
+        </section>
+      )}
+
+      <section aria-label="추천 루틴" className="flex flex-col gap-3 pt-2">
+        <h2 className="type-body-strong">추천 루틴</h2>
+        {report.routine ? <Routine routine={report.routine} /> : <RoutineMissing id={consult.id!} />}
+      </section>
 
       {report.routine && <ApplyRoutine id={consult.id!} applied={report.appliedPlanId != null} />}
-      <p className="px-4 pt-6 type-caption text-subtle-foreground">{report.notice ?? DEFAULT_NOTICE}</p>
+      <p className="pt-2 type-caption text-subtle-foreground">{report.notice ?? DEFAULT_NOTICE}</p>
     </>
   );
 }
 
-function Row({ label, text, strong }: { label: string; text?: string; strong?: boolean }) {
-  if (!text) return null;
+/** Figma "● DO · 지금 해야 할 행동" / "● DON'T · 피해야 할 행동": 점 + 제목, 흰 카드 안 목록 */
+function ActionList({ kind, items }: { kind: "do" | "dont"; items: string[] }) {
+  const isDo = kind === "do";
   return (
-    <div className="flex flex-col gap-1">
-      <p className="type-label text-muted-foreground">{label}</p>
-      <p className={strong ? "type-body-strong leading-[22px]" : "type-body"}>{text}</p>
+    <div className="flex flex-col gap-3">
+      <h3 className="flex items-center gap-1.5 type-body-strong">
+        <span aria-hidden className={isDo ? "size-3 rounded-full bg-brand-strong" : "size-3 rounded-full bg-caution"} />
+        <span className={isDo ? "text-brand-strong" : "text-caution"}>{isDo ? "DO" : "DON'T"}</span>
+        <span>· {isDo ? "지금 해야 할 행동" : "피해야 할 행동"}</span>
+      </h3>
+      <ul className="flex flex-col gap-2 rounded-[16px] border border-border bg-surface px-5 py-4 type-body">
+        {items.map((t) => <li key={t}>{t}</li>)}
+      </ul>
     </div>
   );
 }
@@ -212,7 +233,7 @@ function ApplyRoutine({ id, applied }: { id: number; applied: boolean }) {
   const apply = useApplyRoutine(id);
   if (applied) {
     return (
-      <div className="px-4">
+      <div>
         <Link href="/routine" className="flex h-[47px] items-center justify-center rounded-[14px] bg-secondary type-body font-semibold">
           루틴에서 확인하기
         </Link>
@@ -220,7 +241,7 @@ function ApplyRoutine({ id, applied }: { id: number; applied: boolean }) {
     );
   }
   return (
-    <div className="flex flex-col gap-2 px-4">
+    <div className="flex flex-col gap-2">
       <Button size="cta" disabled={apply.isPending} onClick={() => apply.mutate(undefined, { onSuccess: () => router.push("/routine") })}>
         {apply.isPending ? "시작하는 중…" : "이 루틴으로 관리 시작"}
       </Button>
