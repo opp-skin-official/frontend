@@ -122,3 +122,26 @@ export async function sendMessage(conversationId: number, content: string, handl
   }
   if (!finished) handlers.onError("답변이 중간에 끊겼어요. 잠시 후 다시 시도해 주세요.");
 }
+
+/**
+ * 모델 B의 follow_up_questions는 AI가 묻는 말투("…루틴을 받아보실까요?")라 그대로 보내면 어색하다.
+ * 끝맺음만 사용자 말투로 바꿔("…루틴을 알려 주세요.") 버튼 글자와 보내는 질문으로 쓴다.
+ * 질문이 아닌 안내("…기록해 주시면 도움이 됩니다.")나 사용자가 정보를 더 줘야 하는 것("…알려주시면 …")은 null.
+ */
+const USER_VOICE: [RegExp, string][] = [
+  [/받아\s?보실까요\?$/, "알려 주세요."],
+  [/알려\s?드릴까요\?$/, "알려 주세요."],
+  [/(\S+)\s?드릴까요\?$/, "$1 주세요."],
+  [/볼까요\?$/, "볼래요."],
+  [/궁금하신가요\?$/, "궁금해요."],
+  [/하실래요\?$/, "할래요."],
+];
+
+export function toUserQuestion(question: string): string | null {
+  const q = question.trim();
+  if (!q.endsWith("?") || /주시면/.test(q)) return null;
+  for (const [pattern, replacement] of USER_VOICE) {
+    if (pattern.test(q)) return q.replace(pattern, replacement);
+  }
+  return q;
+}
