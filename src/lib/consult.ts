@@ -127,6 +127,42 @@ export function useConsultation(id: number) {
   });
 }
 
+/** 리포트가 있는 가장 최근 상담. 없으면 null (재방문 때 "지난번과 달라진 점" 질문에 씀). */
+export function useLatestConsultation() {
+  return useQuery({
+    queryKey: ["consultation", "latest"],
+    queryFn: async () => {
+      const { data, response } = await api.GET("/api/consultations/latest");
+      if (response.status === 404) return null;
+      if (!data) throw new Error("이전 상담을 불러오지 못했어요.");
+      return data;
+    },
+    retry: 1,
+  });
+}
+
+export type FollowUpRequest = components["schemas"]["FollowUpRequest"];
+
+/** 후속 상담: 이전 분석으로 지금 가능한 루틴만 다시 만든다. */
+export function useFollowUp(previousId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: FollowUpRequest) => {
+      const { data, error } = await api.POST("/api/consultations/{id}/follow-ups", {
+        params: { path: { id: previousId } },
+        body,
+      });
+      if (!data) throw new Error(detail(error, "루틴을 다시 만들지 못했어요. 잠시 후 다시 시도해 주세요."));
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(["consultation", data.id], data);
+      void queryClient.invalidateQueries({ queryKey: ["consultation", "latest"] });
+      void queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    },
+  });
+}
+
 /** 문진 확정 → 리포트 생성. AI 분석으로 수십 초 걸릴 수 있다. */
 export function useCreateConsultation() {
   const queryClient = useQueryClient();
@@ -138,6 +174,7 @@ export function useCreateConsultation() {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(["consultation", data.id], data);
+      void queryClient.invalidateQueries({ queryKey: ["consultation", "latest"] });
       void queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
   });
