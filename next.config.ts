@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // 스모크 테스트(playwright.config.ts)는 개발 서버와 겹치지 않게 다른 폴더에 빌드한다.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   // cacheComponents·partialPrefetching은 끈다: @opennextjs/cloudflare 1.20이 아직 지원하지 않아
   // Workers에서 모든 페이지가 응답 없이 멈췄다(빌드 경고, opennextjs-cloudflare PR #1318). 앱은 'use cache'를 쓰지 않는다.
   // Cloudflare Workers에는 Next 이미지 최적화 서버가 없다(Cloudflare Images는 별도 서비스). 작은 PNG라 원본을 쓴다.

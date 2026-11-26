@@ -15,6 +15,10 @@ const eslintConfig = defineConfig([
     // Cloudflare(OpenNext) 빌드 결과
     ".open-next/**",
     ".wrangler/**",
+    // 스모크 테스트 빌드·결과
+    ".next-e2e/**",
+    "test-results/**",
+    "playwright-report/**",
   ]),
 ]);
 

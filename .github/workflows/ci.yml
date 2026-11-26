@@ -28,3 +28,29 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run build
+
+  # 주요 화면 스모크 테스트: 프로덕션 빌드를 띄우고 백엔드는 가짜 응답으로 대신한다(e2e/).
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+
+      - name: 실패 리포트 올리기
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
