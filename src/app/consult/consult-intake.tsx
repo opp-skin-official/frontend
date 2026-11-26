@@ -187,6 +187,8 @@ function Questionnaire({ flow, previous, lead }: { flow: Flow; previous?: Consul
   /** C-02에서 고치려고 돌아온 질문 (답하면 다시 C-02로) */
   const [editing, setEditing] = useState<keyof ConsultRequest | null>(null);
   const [view, setView] = useState<"chat" | "summary">("chat");
+  /** 분석이 끝난 상담 (솔루션 보러가기 시트) */
+  const [ready, setReady] = useState<ConsultView | null>(null);
   const create = useCreateConsultation();
   const followUp = useFollowUp(previous?.id ?? 0);
   const mutation = flow === "followup" ? followUp : create;
@@ -200,7 +202,11 @@ function Questionnaire({ flow, previous, lead }: { flow: Flow; previous?: Consul
   }, [stepIndex, editing, view]);
 
   function submit(all: Answers) {
-    const done = { onSuccess: (data: ConsultView) => router.replace(`/consult/${data.id}`) };
+    // 리포트가 나오면 "솔루션 보러가기" 시트를 먼저 보여 주고, 위험 신호(의료진 안내)는 바로 결과로 간다.
+    const done = {
+      onSuccess: (data: ConsultView) =>
+        data.report ? setReady(data) : router.replace(`/consult/${data.id}`),
+    };
     if (flow === "followup") {
       followUp.mutate(
         {
@@ -250,6 +256,8 @@ function Questionnaire({ flow, previous, lead }: { flow: Flow; previous?: Consul
     setEditing(key);
     setView("chat");
   }
+
+  if (ready) return <SolutionReady consult={ready} onOpen={() => router.replace(`/consult/${ready.id}`)} />;
 
   if (mutation.isPending) return <Analyzing referral={answers.redFlag === true} followUp={flow === "followup"} />;
 
@@ -440,6 +448,54 @@ function Summary({
           확인했어요
         </Button>
       </div>
+    </main>
+  );
+}
+
+/**
+ * Figma "솔루션 보러가기": 아래 시트(손잡이) · 얼굴 + 확인 표시 · "지금 할 수 있는 관리법을 준비했어요" · 요약 칩 · 버튼.
+ * 칩 문구는 디자인 화면에서 읽을 수 없어 이번 상담 결과(관리 방법 수, 루틴 기간)로 채운다.
+ */
+function SolutionReady({ consult, onOpen }: { consult: ConsultView; onOpen: () => void }) {
+  const report = consult.report;
+  const routine = report?.routine;
+  const chips = [
+    `관리 방법 ${(report?.pairs ?? []).length}가지`,
+    routine ? ((routine.targetDays ?? 0) > 0 ? `${routine.targetDays}일 루틴` : "매일 루틴") : null,
+    (report?.recommendedIngredients ?? []).length > 0 ? `추천 성분 ${(report?.recommendedIngredients ?? []).length}개` : null,
+  ].filter((c): c is string => c !== null).slice(0, 2);
+  return (
+    <main className="flex flex-1 flex-col justify-end">
+      <section
+        aria-label="솔루션 준비 완료"
+        className="flex flex-col gap-4 rounded-t-[24px] border border-b-0 border-border bg-surface px-6 pt-3 pb-8 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]"
+      >
+        <span aria-hidden className="mx-auto h-1 w-10 rounded-full bg-border" />
+        <div className="relative mt-3 w-fit">
+          <Image src="/images/consult-face.png" alt="" width={64} height={70} />
+          <Icon name="check-circle" className="absolute -right-2 bottom-0" />
+        </div>
+        <h2 className="type-title">
+          지금 할 수 있는 관리법을
+          <br />
+          준비했어요
+        </h2>
+        <p className="type-caption text-muted-foreground">
+          피부 상태와 오늘의 상황에 맞춘
+          <br />
+          관리법을 정리했어요.
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {chips.map((c) => (
+            <span key={c} className="rounded-[11px] border border-border bg-secondary px-3 py-0.5 type-caption">
+              {c}
+            </span>
+          ))}
+        </div>
+        <Button size="cta" className="mt-4 w-full" onClick={onOpen}>
+          솔루션 보러가기
+        </Button>
+      </section>
     </main>
   );
 }
