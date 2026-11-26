@@ -3,9 +3,13 @@
 import Link from "next/link";
 import { type ProductSummary, useToggleMyProduct, won } from "@/lib/products";
 
-/** 제품 카드 (Figma "4-1제품추천"). matchScore가 있으면 왼쪽 위에 궁합 점수 배지. */
+/**
+ * 제품 카드 (Figma "4-1제품추천"). 궁합 점수가 있으면 왼쪽 위에 배지.
+ * matchScore를 넘기지 않으면 목록 API가 준 product.matchScore를 쓴다.
+ */
 export function ProductCard({ product, matchScore }: { product: ProductSummary; matchScore?: number | null }) {
   const toggle = useToggleMyProduct();
+  const score = matchScore !== undefined ? matchScore : product.matchScore;
   return (
     <div className="relative flex flex-col overflow-hidden rounded-[20px] bg-surface shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
       <Link href={`/products/${product.id}`} className="flex flex-col">
@@ -27,9 +31,9 @@ export function ProductCard({ product, matchScore }: { product: ProductSummary; 
           </span>
         </span>
       </Link>
-      {matchScore != null && (
+      {score != null && (
         <span className="absolute top-2 left-2 rounded-[11px] bg-brand px-2 py-0.5 type-caption font-semibold">
-          궁합 {matchScore}점
+          궁합 {score}점
         </span>
       )}
       <button
