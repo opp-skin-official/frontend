@@ -100,6 +100,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list"];
+        put?: never;
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/conversations/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/care-plans": {
         parameters: {
             query?: never;
@@ -187,7 +219,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list"];
+        get: operations["list_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -203,7 +235,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_1"];
+        get: operations["list_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -219,7 +251,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_2"];
+        get: operations["list_3"];
         put?: never;
         post?: never;
         delete?: never;
@@ -292,6 +324,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/conversations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/care-plans/current": {
         parameters: {
             query?: never;
@@ -315,7 +363,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get"];
+        get: operations["get_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -461,6 +509,43 @@ export interface components {
             productId: number;
             /** @enum {string} */
             kind: "OWNED" | "INTEREST";
+        };
+        ConversationRequest: {
+            useSavedProfile?: boolean;
+        };
+        ConversationView: {
+            /** Format: int64 */
+            id?: number;
+            /** @enum {string} */
+            kind?: "QNA";
+            title?: string;
+            useSavedProfile?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+            messages?: components["schemas"]["MessageView"][];
+        };
+        MessageView: {
+            /** Format: int64 */
+            id?: number;
+            /** @enum {string} */
+            role?: "USER" | "ASSISTANT";
+            /** @enum {string} */
+            status?: "DONE" | "BLOCKED";
+            content?: string;
+            actionTips?: string[];
+            followUpQuestions?: string[];
+            referToClinician?: boolean;
+            notice?: string;
+            referralNotice?: string;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        MessageRequest: {
+            content: string;
+        };
+        SseEmitter: {
+            /** Format: int64 */
+            timeout?: number;
         };
         PlanRequest: {
             /** @enum {string} */
@@ -624,6 +709,17 @@ export interface components {
             id?: number;
             nickname?: string;
             profileImageUrl?: string;
+        };
+        ConversationSummary: {
+            /** Format: int64 */
+            id?: number;
+            /** @enum {string} */
+            kind?: "QNA";
+            title?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
         };
     };
     responses: never;
@@ -840,6 +936,78 @@ export interface operations {
             };
         };
     };
+    list: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConversationSummary"][];
+                };
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ConversationRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConversationView"];
+                };
+            };
+        };
+    };
+    send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["SseEmitter"];
+                };
+            };
+        };
+    };
     createPlan: {
         parameters: {
             query?: never;
@@ -948,7 +1116,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    list_1: {
         parameters: {
             query: {
                 from: string;
@@ -971,7 +1139,7 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    list_2: {
         parameters: {
             query?: {
                 category?: ("CLEANSER" | "TONER" | "LOTION" | "ESSENCE" | "CREAM" | "SUNSCREEN")[];
@@ -998,7 +1166,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_3: {
         parameters: {
             query?: {
                 page?: number;
@@ -1106,6 +1274,28 @@ export interface operations {
             };
         };
     };
+    get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConversationView"];
+                };
+            };
+        };
+    };
     currentPlan: {
         parameters: {
             query?: never;
@@ -1126,7 +1316,7 @@ export interface operations {
             };
         };
     };
-    get: {
+    get_1: {
         parameters: {
             query?: never;
             header?: never;

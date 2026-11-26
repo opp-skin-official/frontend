@@ -8,13 +8,15 @@ import { FocusCard } from "@/components/app/focus-card";
 import { Icon } from "@/components/app/icon";
 import { SectionHeader } from "@/components/app/section-header";
 import { useMe } from "@/lib/auth";
+import { useConversations } from "@/lib/chat";
 import { useTodayRoutine } from "@/lib/routine";
 import { useLatestAssessment } from "@/lib/survey";
 
 /**
  * Figma "1. 홈"(499:808).
  * - 나의 집중 관리: 진행 중인 관리 계획의 D-day. 없으면 계획 만들기로 안내한다.
- * - 상담 시작, 추천 상품, 최근 상담은 해당 기능이 생기기 전까지 빈 상태로 보여 준다.
+ * - 상담 시작은 AI 비서 피부 Q&A(/chat)로 연결하고, 최근 상담은 그 대화 목록을 보여 준다.
+ * - 추천 상품은 기능이 생기기 전까지 빈 상태로 보여 준다.
  */
 export function HomeView() {
   const me = useMe();
@@ -61,22 +63,21 @@ export function HomeView() {
 
       <SectionHeader title="최근 상담 리스트" />
       <div className="px-4 pt-1">
-        <EmptyCard text="아직 상담 기록이 없어요." />
+        {loggedIn ? <RecentConversations /> : <EmptyCard text="로그인하면 상담 기록을 볼 수 있어요." />}
       </div>
     </main>
   );
 }
 
-/** 상담 시작 카드. 상담 기능 전까지는 누를 수 없는 상태로 둔다. */
+/** 상담 시작 카드 → AI 비서 피부 Q&A */
 function ConsultCard() {
   return (
-    <div
-      aria-disabled
-      className="relative h-[232px] overflow-hidden rounded-card bg-gradient-to-r from-secondary to-brand p-4"
+    <Link
+      href="/chat"
+      className="relative block h-[232px] overflow-hidden rounded-card bg-gradient-to-r from-secondary to-brand p-4"
     >
       <div className="flex items-start justify-between">
         <Icon name="chat-start" />
-        <span className="rounded-[11px] bg-surface px-3 py-1 type-caption">준비 중</span>
       </div>
       <p className="absolute top-[131px] left-4 type-body text-muted-foreground">
         AI 비서에게 불편한 점을
@@ -91,7 +92,7 @@ function ConsultCard() {
         height={151}
         className="absolute top-[116px] left-[219px]"
       />
-    </div>
+    </Link>
   );
 }
 
@@ -133,6 +134,34 @@ function SkinInfoCard() {
         ))}
       </span>
     </Link>
+  );
+}
+
+function RecentConversations() {
+  const { data, isPending, isError } = useConversations(true, 5);
+  if (isPending) return <EmptyCard text="불러오는 중…" />;
+  if (isError) return <EmptyCard text="상담 기록을 불러오지 못했어요." />;
+  const items = (data ?? []).filter((c) => c.title);
+  if (items.length === 0) return <EmptyCard text="아직 상담 기록이 없어요." />;
+  return (
+    <ul className="flex flex-col gap-2">
+      {items.map((c) => (
+        <li key={c.id}>
+          <Link
+            href={`/chat/${c.id}`}
+            className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-4"
+          >
+            <span className="flex min-w-0 flex-col gap-1">
+              <span className="truncate type-body-strong">{c.title}</span>
+              <span className="type-caption text-muted-foreground">
+                {c.updatedAt ? new Date(c.updatedAt).toLocaleDateString("ko-KR", { month: "long", day: "numeric" }) : ""}
+              </span>
+            </span>
+            <Icon name="chevron-right" />
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
 

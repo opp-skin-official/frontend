@@ -30,7 +30,7 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
-        // 제대로 하단 선택 버튼 (Figma: 174x47, radius 14, 14px SemiBold)
+        // OPP 하단 선택 버튼 (Figma: 174x47, radius 14, 14px SemiBold)
         cta: "h-[47px] rounded-[14px] px-4 type-body font-semibold",
       },
     },

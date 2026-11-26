@@ -12,7 +12,7 @@ import { TopBar } from "@/components/app/top-bar";
 import { Button } from "@/components/ui/button";
 import { ChatInputDemo } from "./chat-input-demo";
 
-export const metadata: Metadata = { title: "디자인 시스템 · 제대로" };
+export const metadata: Metadata = { title: "디자인 시스템 · OPP" };
 
 const COLORS = [
   ["초 (brand)", "bg-brand"],

@@ -3,7 +3,7 @@ import { AppShell } from "@/components/app/app-shell";
 import { TopBar } from "@/components/app/top-bar";
 import { RecordForm } from "./record-form";
 
-export const metadata: Metadata = { title: "경과 기록 · 제대로" };
+export const metadata: Metadata = { title: "경과 기록 · OPP" };
 
 export default function RecordPage() {
   return (

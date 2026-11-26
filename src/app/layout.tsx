@@ -10,7 +10,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "제대로",
+  title: "OPP",
   description: "AI 피부 상담과 루틴 관리",
 };
 

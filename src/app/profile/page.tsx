@@ -4,7 +4,7 @@ import { BottomTabBar } from "@/components/app/bottom-tab-bar";
 import { TopBar } from "@/components/app/top-bar";
 import { ProfileView } from "./profile-view";
 
-export const metadata: Metadata = { title: "피부 프로필 · 제대로" };
+export const metadata: Metadata = { title: "피부 프로필 · OPP" };
 
 export default function ProfilePage() {
   return (

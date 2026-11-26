@@ -4,7 +4,7 @@ import { BottomTabBar } from "@/components/app/bottom-tab-bar";
 import { TopBar } from "@/components/app/top-bar";
 import { ProductsView } from "./products-view";
 
-export const metadata: Metadata = { title: "제품 추천 · 제대로" };
+export const metadata: Metadata = { title: "제품 추천 · OPP" };
 
 export default function ProductsPage() {
   return (
