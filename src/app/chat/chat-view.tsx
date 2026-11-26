@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChatBubble } from "@/components/app/chat-bubble";
 import { ChatInput } from "@/components/app/chat-input";
 import { RequireLogin } from "@/components/app/require-login";
-import { type MessageView, createConversation, sendMessage, useConversation } from "@/lib/chat";
+import { type MessageView, createConversation, sendMessage, toUserQuestion, useConversation } from "@/lib/chat";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_NOTICE = "AI 비서의 안내는 피부 관리 참고용이며, 의학적 판단이나 개선 보장이 아니에요.";
@@ -178,7 +178,8 @@ function ChatContent({ nickname }: { nickname: string }) {
 
 function AssistantMessage({ message, onFollowUp }: { message: MessageView; onFollowUp?: (q: string) => void }) {
   const tips = message.actionTips ?? [];
-  const followUps = message.followUpQuestions ?? [];
+  // 모델이 주는 질문은 AI 말투라, 사용자 말투로 바꾼 것만 버튼으로 보여 준다.
+  const followUps = (message.followUpQuestions ?? []).map(toUserQuestion).filter((q): q is string => q !== null);
   return (
     <div className="flex flex-col gap-2">
       <ChatBubble from="assistant">{message.content}</ChatBubble>
