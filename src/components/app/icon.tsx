@@ -16,6 +16,7 @@ const ICONS = {
   more: [40, 40],
   send: [55, 55],
   "check-circle": [27, 26],
+  edit: [12, 12],
 } as const;
 
 export type IconName = keyof typeof ICONS;

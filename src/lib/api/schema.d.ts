@@ -132,6 +132,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/consultations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["create_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/consultations/{id}/routine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["regenerateRoutine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/consultations/{id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["apply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/care-plans": {
         parameters: {
             query?: never;
@@ -340,6 +388,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/consultations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/care-plans/current": {
         parameters: {
             query?: never;
@@ -363,7 +427,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_1"];
+        get: operations["get_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -517,7 +581,7 @@ export interface components {
             /** Format: int64 */
             id?: number;
             /** @enum {string} */
-            kind?: "QNA";
+            kind?: "QNA" | "CONSULT";
             title?: string;
             useSavedProfile?: boolean;
             /** Format: date-time */
@@ -547,14 +611,77 @@ export interface components {
             /** Format: int64 */
             timeout?: number;
         };
-        PlanRequest: {
+        ConsultRequest: {
             /** @enum {string} */
-            goalType: "VACATION" | "OUTING" | "OVERNIGHT" | "CUSTOM";
-            goalLabel?: string;
-            /** Format: date */
-            targetDate: string;
+            kind: "ACNE_COMEDONAL_INFLAMMATORY" | "POST_ACNE_SCAR_ERYTHEMA_PORES" | "CONTACT_IRRITANT_DERMATITIS" | "DRYNESS_BARRIER_DAMAGE" | "FOLLICULITIS_SHAVING" | "UV_PIGMENTATION_PHOTOAGING" | "ATOPIC_DERMATITIS" | "SEBORRHEIC_DERMATITIS" | "SKIN_IMPROVEMENT_MAINTENANCE";
+            regions: ("FOREHEAD" | "CHEEK_LEFT" | "CHEEK_RIGHT" | "NOSE" | "CHIN" | "EYE_AREA")[];
             /** @enum {string} */
-            focusGoal: "BASIC_ROUTINE" | "PRODUCT_REACTION" | "SKIN_CHANGE";
+            onset: "IMMEDIATE_ACUTE" | "TRAINING_FIELD" | "DURING_SERVICE" | "POST_PRODUCT_SHAVE" | "CHRONIC_PRE_ENLISTMENT" | "OTHER_UNSPECIFIED";
+            /** @enum {string} */
+            duration: "ACUTE_DAYS" | "WEEKS" | "MONTHS" | "SERVICE_ONGOING" | "CHRONIC_YEARS";
+            /** Format: int32 */
+            severity?: number;
+            /** @enum {string} */
+            change: "WORSENED" | "IMPROVED" | "UNCHANGED";
+            redFlag?: boolean;
+            activities?: ("OUTDOOR_TRAINING" | "MARCH" | "GAS_MASK" | "CAMO_CREAM" | "HELMET_STRAP" | "SHAVING")[];
+            /** @enum {string} */
+            careTime?: "MORNING_EVENING" | "EVENING_ONLY" | "MINIMAL";
+            products?: ("CLEANSER" | "MOISTURIZER" | "SUNSCREEN" | "ALL_IN_ONE")[];
+            /** Format: int32 */
+            targetDays?: number;
+        };
+        ConsultView: {
+            /** Format: int64 */
+            id?: number;
+            /** @enum {string} */
+            state?: "COMPLETED" | "REFERRED";
+            title?: string;
+            answers?: components["schemas"]["ConsultRequest"];
+            /** Format: date-time */
+            createdAt?: string;
+            report?: components["schemas"]["ReportView"];
+        };
+        IngredientView: {
+            key?: string;
+            labelKo?: string;
+            inci?: string;
+        };
+        PairView: {
+            regions?: string[];
+            observation?: string;
+            cause?: string;
+            solution?: string;
+            confidence?: string;
+        };
+        PhaseView: {
+            label?: string;
+            dayRange?: string;
+            focus?: string;
+            morning?: string[];
+            evening?: string[];
+            postActivity?: string[];
+            checkpoint?: string;
+        };
+        ReportView: {
+            pairs?: components["schemas"]["PairView"][];
+            referToClinician?: boolean;
+            notice?: string;
+            referralNotice?: string;
+            recommendedIngredients?: components["schemas"]["IngredientView"][];
+            cautionIngredients?: components["schemas"]["IngredientView"][];
+            routine?: components["schemas"]["RoutineView"];
+            /** Format: int64 */
+            appliedPlanId?: number;
+        };
+        RoutineView: {
+            mode?: string;
+            /** Format: int32 */
+            targetDays?: number;
+            summary?: string;
+            phases?: components["schemas"]["PhaseView"][];
+            referToClinician?: boolean;
+            referralNotice?: string;
         };
         PlanView: {
             /** Format: int64 */
@@ -570,6 +697,15 @@ export interface components {
             targetDate?: string;
             /** Format: int64 */
             daysLeft?: number;
+        };
+        PlanRequest: {
+            /** @enum {string} */
+            goalType: "VACATION" | "OUTING" | "OVERNIGHT" | "CUSTOM";
+            goalLabel?: string;
+            /** Format: date */
+            targetDate: string;
+            /** @enum {string} */
+            focusGoal: "BASIC_ROUTINE" | "PRODUCT_REACTION" | "SKIN_CHANGE";
         };
         AlertRequest: {
             target: string;
@@ -714,7 +850,7 @@ export interface components {
             /** Format: int64 */
             id?: number;
             /** @enum {string} */
-            kind?: "QNA";
+            kind?: "QNA" | "CONSULT";
             title?: string;
             /** Format: date-time */
             createdAt?: string;
@@ -1008,6 +1144,74 @@ export interface operations {
             };
         };
     };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsultRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConsultView"];
+                };
+            };
+        };
+    };
+    regenerateRoutine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConsultView"];
+                };
+            };
+        };
+    };
+    apply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlanView"];
+                };
+            };
+        };
+    };
     createPlan: {
         parameters: {
             query?: never;
@@ -1296,6 +1500,28 @@ export interface operations {
             };
         };
     };
+    get_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConsultView"];
+                };
+            };
+        };
+    };
     currentPlan: {
         parameters: {
             query?: never;
@@ -1316,7 +1542,7 @@ export interface operations {
             };
         };
     };
-    get_1: {
+    get_2: {
         parameters: {
             query?: never;
             header?: never;
