@@ -15,7 +15,7 @@ import { useLatestAssessment } from "@/lib/survey";
 /**
  * Figma "1. 홈"(499:808).
  * - 나의 집중 관리: 진행 중인 관리 계획의 D-day. 없으면 계획 만들기로 안내한다.
- * - 상담 시작은 AI 비서 피부 Q&A(/chat)로 연결하고, 최근 상담은 그 대화 목록을 보여 준다.
+ * - 상담 시작은 문진 상담(/consult)으로 연결하고, 최근 상담은 문진 상담·피부 Q&A 목록을 보여 준다.
  * - 추천 상품은 기능이 생기기 전까지 빈 상태로 보여 준다.
  */
 export function HomeView() {
@@ -69,11 +69,11 @@ export function HomeView() {
   );
 }
 
-/** 상담 시작 카드 → AI 비서 피부 Q&A */
+/** 상담 시작 카드 → 문진 상담 (가벼운 질문은 하단 "챗봇" 탭) */
 function ConsultCard() {
   return (
     <Link
-      href="/chat"
+      href="/consult"
       className="relative block h-[232px] overflow-hidden rounded-card bg-gradient-to-r from-secondary to-brand p-4"
     >
       <div className="flex items-start justify-between">
@@ -148,12 +148,13 @@ function RecentConversations() {
       {items.map((c) => (
         <li key={c.id}>
           <Link
-            href={`/chat/${c.id}`}
+            href={c.kind === "CONSULT" ? `/consult/${c.id}` : `/chat/${c.id}`}
             className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-4"
           >
             <span className="flex min-w-0 flex-col gap-1">
               <span className="truncate type-body-strong">{c.title}</span>
               <span className="type-caption text-muted-foreground">
+                {c.kind === "CONSULT" ? "피부 상담 · " : "질문 · "}
                 {c.updatedAt ? new Date(c.updatedAt).toLocaleDateString("ko-KR", { month: "long", day: "numeric" }) : ""}
               </span>
             </span>
