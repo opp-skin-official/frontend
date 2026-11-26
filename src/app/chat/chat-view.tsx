@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChatBubble } from "@/components/app/chat-bubble";
+import { ChatMarkdown } from "@/components/app/chat-markdown";
 import { ChatInput } from "@/components/app/chat-input";
 import { RequireLogin } from "@/components/app/require-login";
 import { type MessageView, createConversation, sendMessage, toUserQuestion, useConversation } from "@/lib/chat";
@@ -157,7 +158,14 @@ function ChatContent({ nickname }: { nickname: string }) {
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                <ChatBubble from="assistant">{pending.text || "답변을 준비하고 있어요…"}</ChatBubble>
+                {pending.text ? (
+                  // 모델 v6.3은 글자 조각도 마크다운으로 보낸다(빈 줄이 빠질 수 있어 끝나면 저장된 답변으로 바뀐다).
+                  <ChatBubble from="assistant" rich>
+                    <ChatMarkdown>{pending.text}</ChatMarkdown>
+                  </ChatBubble>
+                ) : (
+                  <ChatBubble from="assistant">답변을 준비하고 있어요…</ChatBubble>
+                )}
                 {pending.slow && !pending.text && (
                   <p className="type-caption text-subtle-foreground">
                     한동안 대화가 없으면 첫 답변까지 30초 넘게 걸릴 수 있어요.
@@ -177,12 +185,20 @@ function ChatContent({ nickname }: { nickname: string }) {
 }
 
 function AssistantMessage({ message, onFollowUp }: { message: MessageView; onFollowUp?: (q: string) => void }) {
-  const tips = message.actionTips ?? [];
+  const markdown = message.format === "markdown";
+  // 마크다운 답변은 실천 팁이 본문에 들어 있어 따로 보여 주지 않는다.
+  const tips = markdown ? [] : (message.actionTips ?? []);
   // 모델이 주는 질문은 AI 말투라, 사용자 말투로 바꾼 것만 버튼으로 보여 준다.
   const followUps = (message.followUpQuestions ?? []).map(toUserQuestion).filter((q): q is string => q !== null);
   return (
     <div className="flex flex-col gap-2">
-      <ChatBubble from="assistant">{message.content}</ChatBubble>
+      {markdown ? (
+        <ChatBubble from="assistant" rich>
+          <ChatMarkdown>{message.content ?? ""}</ChatMarkdown>
+        </ChatBubble>
+      ) : (
+        <ChatBubble from="assistant">{message.content}</ChatBubble>
+      )}
       {tips.length > 0 && (
         <section aria-label="실천 팁" className="max-w-[282px] rounded-panel border border-border bg-surface px-5 py-4">
           <p className="type-body-strong">이렇게 해 보세요</p>

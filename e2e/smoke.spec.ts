@@ -149,11 +149,14 @@ test.describe("로그인 후", () => {
     });
   });
 
-  test("AI 채팅: 지난 대화의 질문과 답변", async ({ page }) => {
+  test("AI 채팅: 지난 질문과 마크다운 답변(제목·목록·강조)", async ({ page }) => {
     await page.goto(`/chat/${data.conversation.id}`);
-    for (const message of data.conversation.messages!) {
-      await expect(page.getByText(message.content!).first()).toBeVisible();
-    }
+    await expect(page.getByText(data.conversation.messages![0].content!).first()).toBeVisible();
+    await expect(page.getByText("야외훈련 중이면 2~3시간마다 다시 바르는 게 좋아요.")).toBeVisible();
+    await expect(page.getByText("실천 팁", { exact: true })).toBeVisible();
+    await expect(page.locator("li", { hasText: "덧바르기" }).locator("strong")).toHaveText("땀을 닦은 뒤");
+    await expect(page.getByText("###")).toHaveCount(0); // 마크다운 기호가 그대로 보이면 안 된다
+    await expect(page.getByRole("region", { name: "실천 팁" })).toHaveCount(0); // 본문에 있는 팁을 따로 또 보여 주지 않는다
   });
 
   test("피부 유형 설문: 동의 → 첫 문항과 선택지", async ({ page }) => {

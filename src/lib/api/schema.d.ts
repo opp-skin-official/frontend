@@ -663,6 +663,7 @@ export interface components {
             /** @enum {string} */
             status?: "DONE" | "BLOCKED";
             content?: string;
+            format?: string;
             actionTips?: string[];
             followUpQuestions?: string[];
             referToClinician?: boolean;

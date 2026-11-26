@@ -4,23 +4,27 @@ import { cn } from "@/lib/utils";
 export function ChatBubble({
   from,
   children,
+  rich = false,
 }: {
   from: "assistant" | "user";
   children: React.ReactNode;
+  /** 마크다운처럼 문단·목록을 직접 그리는 내용이면 true (줄바꿈 그대로 표시를 끈다) */
+  rich?: boolean;
 }) {
   const isUser = from === "user";
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
-      <p
+      <div
         className={cn(
-          "max-w-[282px] whitespace-pre-line px-5 py-[18px] type-chat",
+          "max-w-[282px] px-5 py-[18px] type-chat",
+          !rich && "whitespace-pre-line",
           isUser
             ? "rounded-bubble rounded-tr-none bg-brand text-bubble-user-foreground"
             : "rounded-bubble rounded-bl-none bg-secondary text-muted-foreground",
         )}
       >
         {children}
-      </p>
+      </div>
     </div>
   );
 }
