@@ -48,6 +48,12 @@ function ReportContent() {
         </p>
         <h2 className="type-title">{data.state === "REFERRED" ? "먼저 의료진 상담이 필요해요" : "이렇게 관리해 보세요"}</h2>
         <p className="type-body text-muted-foreground">{data.title}</p>
+        {data.followsId != null && (
+          <p className="type-caption text-muted-foreground">
+            지난 상담을 이어서 지금 상황에 맞게 루틴을 다시 만들었어요.{" "}
+            <Link href={`/consult/${data.followsId}`} className="underline">지난 리포트 보기</Link>
+          </p>
+        )}
       </header>
       {data.state === "REFERRED" || !data.report ? <Referral /> : <Report consult={data} report={data.report} />}
     </main>

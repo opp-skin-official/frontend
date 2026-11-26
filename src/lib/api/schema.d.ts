@@ -164,6 +164,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/consultations/{id}/follow-ups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["followUp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/consultations/{id}/apply": {
         parameters: {
             query?: never;
@@ -396,6 +412,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["get_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/consultations/latest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["latest_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -641,6 +673,8 @@ export interface components {
             /** Format: date-time */
             createdAt?: string;
             report?: components["schemas"]["ReportView"];
+            /** Format: int64 */
+            followsId?: number;
         };
         IngredientView: {
             key?: string;
@@ -682,6 +716,13 @@ export interface components {
             phases?: components["schemas"]["PhaseView"][];
             referToClinician?: boolean;
             referralNotice?: string;
+        };
+        FollowUpRequest: {
+            /** @enum {string} */
+            careTime: "MORNING_EVENING" | "EVENING_ONLY" | "MINIMAL";
+            products?: ("CLEANSER" | "MOISTURIZER" | "SUNSCREEN" | "ALL_IN_ONE")[];
+            /** Format: int32 */
+            targetDays?: number;
         };
         PlanView: {
             /** Format: int64 */
@@ -1190,6 +1231,32 @@ export interface operations {
             };
         };
     };
+    followUp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FollowUpRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConsultView"];
+                };
+            };
+        };
+    };
     apply: {
         parameters: {
             query?: never;
@@ -1507,6 +1574,26 @@ export interface operations {
             path: {
                 id: number;
             };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConsultView"];
+                };
+            };
+        };
+    };
+    latest_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;

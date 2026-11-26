@@ -36,8 +36,8 @@ export const FOLLOW_UP: Record<PerceivedChange, { message: string; link?: { href
   },
   WORSE: {
     message:
-      "달라진 증상과 상황을 AI 비서에게 물어보세요. 증상이 심하거나 오래가면 의무실이나 의료진과 상담하세요.",
-    link: { href: "/chat", label: "AI 비서에게 물어보기" },
+      "달라진 증상과 상황을 추가 상담으로 확인해요. 증상이 심하거나 오래가면 의무실이나 의료진과 상담하세요.",
+    link: { href: "/consult", label: "추가 상담하기" },
   },
   UNSURE: {
     message: "메모로 느낀 점을 더 남겨 주세요. 기록이 부족하면 판단을 미뤄 둘게요.",

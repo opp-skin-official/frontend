@@ -13,6 +13,8 @@ import {
   CARE_TIME_OPTIONS,
   CHANGE_OPTIONS,
   type ConsultRequest,
+  type ConsultView,
+  type FollowUpRequest,
   DURATION_OPTIONS,
   KIND_OPTIONS,
   ONSET_OPTIONS,
@@ -23,6 +25,8 @@ import {
   labelOf,
   labelsOf,
   useCreateConsultation,
+  useFollowUp,
+  useLatestConsultation,
 } from "@/lib/consult";
 import { cn } from "@/lib/utils";
 
@@ -75,6 +79,12 @@ const STEPS: Step[] = [
 
 type Answers = Partial<Record<keyof ConsultRequest, unknown>>;
 
+/** 후속 상담에서 다시 묻는 것: 지금 가능한 관리 시간·제품·목표 기간 */
+const FOLLOW_UP_KEYS: (keyof ConsultRequest)[] = ["careTime", "products", "targetDays"];
+const FOLLOW_UP_STEPS = STEPS.filter((s) => FOLLOW_UP_KEYS.includes(s.key));
+
+type Flow = "new" | "followup";
+
 function answerLabel(step: Step, value: unknown) {
   if (step.multi) {
     const labels = step.options.filter((o) => (value as unknown[] | undefined)?.includes(o.value)).map((o) => o.label);
@@ -92,24 +102,116 @@ export function ConsultIntake() {
   );
 }
 
+/** IA 재방문: "지난번과 달라진 점이 있나요?" */
+const SINCE_OPTIONS = [
+  { value: "same", label: "그대로예요, 지난 방법이 잘 맞아요" },
+  { value: "constraints", label: "시간이나 쓸 수 있는 물품이 달라졌어요" },
+  { value: "worse", label: "더 불편해졌어요" },
+  { value: "new", label: "다른 고민이 생겼어요" },
+] as const;
+type Since = (typeof SINCE_OPTIONS)[number]["value"];
+
+/** 리포트가 있는 이전 상담이 있으면 달라진 점부터 묻고, 없으면 바로 문진 */
 function Intake() {
   const router = useRouter();
-  const [answers, setAnswers] = useState<Answers>({});
+  const latest = useLatestConsultation();
+  const [since, setSince] = useState<Since | null>(null);
+  const [fresh, setFresh] = useState(false);
+
+  if (latest.isPending) return <p className="px-4 py-8 type-body text-muted-foreground">불러오는 중…</p>;
+  const previous = latest.data;
+  if (!previous || since === "new" || fresh) return <Questionnaire flow="new" />;
+
+  const date = previous.createdAt
+    ? new Date(previous.createdAt).toLocaleDateString("ko-KR", { month: "long", day: "numeric" })
+    : "";
+  const ask = (
+    <ChatBubble from="assistant">{`지난번 ${date} '${previous.title}' 상담 이후\n달라진 점이 있나요?`}</ChatBubble>
+  );
+  const picked = SINCE_OPTIONS.find((o) => o.value === since);
+
+  if (since === "constraints") {
+    return (
+      <Questionnaire
+        flow="followup"
+        previous={previous}
+        lead={
+          <>
+            {ask}
+            <ChatBubble from="user">{picked!.label}</ChatBubble>
+          </>
+        }
+      />
+    );
+  }
+
+  return (
+    <main className="flex flex-1 flex-col gap-5 px-4 pt-[25px] pb-8">
+      {ask}
+      {since === "worse" ? (
+        <>
+          <ChatBubble from="user">{picked!.label}</ChatBubble>
+          <ChatBubble from="assistant">
+            {"불편이 심해졌다면 먼저 의무대나 가까운\n의료기관에 상담해 주세요.\n지금 증상을 다시 알려 주시면 새로 살펴볼게요."}
+          </ChatBubble>
+          <div className="flex justify-end">
+            <Button size="cta" className="w-[174px]" onClick={() => setFresh(true)}>
+              증상 다시 알려주기
+            </Button>
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-col items-end gap-2" role="group" aria-label="달라진 점 고르기">
+          {SINCE_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => (o.value === "same" ? router.push(`/consult/${previous.id}`) : setSince(o.value))}
+              className="rounded-bubble rounded-tr-none border border-brand-strong bg-surface px-4 py-2.5 text-left type-body"
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </main>
+  );
+}
+
+function Questionnaire({ flow, previous, lead }: { flow: Flow; previous?: ConsultView; lead?: React.ReactNode }) {
+  const router = useRouter();
+  const steps = flow === "followup" ? FOLLOW_UP_STEPS : STEPS;
+  // 후속 상담은 이전 답(고민·증상)을 그대로 두고, 다시 묻는 질문에는 지난 답을 표시해 둔다.
+  const [answers, setAnswers] = useState<Answers>(flow === "followup" && previous?.answers ? { ...previous.answers } : {});
   const [stepIndex, setStepIndex] = useState(0);
   /** C-02에서 고치려고 돌아온 질문 (답하면 다시 C-02로) */
   const [editing, setEditing] = useState<keyof ConsultRequest | null>(null);
   const [view, setView] = useState<"chat" | "summary">("chat");
   const create = useCreateConsultation();
+  const followUp = useFollowUp(previous?.id ?? 0);
+  const mutation = flow === "followup" ? followUp : create;
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const current = editing ? STEPS.find((s) => s.key === editing)! : STEPS[stepIndex];
-  const answered = STEPS.filter((s, i) => (editing ? s.key !== editing && s.key in answers : i < stepIndex));
+  const current = editing ? steps.find((s) => s.key === editing)! : steps[stepIndex];
+  const answered = steps.filter((s, i) => (editing ? s.key !== editing && s.key in answers : i < stepIndex));
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });
   }, [stepIndex, editing, view]);
 
   function submit(all: Answers) {
+    const done = { onSuccess: (data: ConsultView) => router.replace(`/consult/${data.id}`) };
+    if (flow === "followup") {
+      followUp.mutate(
+        {
+          careTime: all.careTime as FollowUpRequest["careTime"],
+          products: (all.products as FollowUpRequest["products"]) ?? [],
+          targetDays: (all.targetDays as number | undefined) ?? 0,
+        },
+        done,
+      );
+      return;
+    }
     const body = {
       kind: all.kind,
       regions: all.regions,
@@ -123,7 +225,7 @@ function Intake() {
       products: (all.products as unknown[] | undefined) ?? [],
       targetDays: (all.targetDays as number | undefined) ?? 0,
     } as ConsultRequest;
-    create.mutate(body, { onSuccess: (data) => router.replace(`/consult/${data.id}`) });
+    create.mutate(body, done);
   }
 
   function answer(value: unknown) {
@@ -137,7 +239,7 @@ function Intake() {
     if (editing) {
       setEditing(null);
       setView("summary");
-    } else if (stepIndex + 1 < STEPS.length) {
+    } else if (stepIndex + 1 < steps.length) {
       setStepIndex(stepIndex + 1);
     } else {
       setView("summary");
@@ -149,14 +251,14 @@ function Intake() {
     setView("chat");
   }
 
-  if (create.isPending) return <Analyzing referral={answers.redFlag === true} />;
+  if (mutation.isPending) return <Analyzing referral={answers.redFlag === true} followUp={flow === "followup"} />;
 
-  if (create.isError) {
+  if (mutation.isError) {
     return (
       <main className="flex flex-1 flex-col items-start gap-3 px-4 py-8">
-        <p role="alert" className="type-body text-destructive">{create.error.message}</p>
+        <p role="alert" className="type-body text-destructive">{mutation.error.message}</p>
         <div className="flex gap-2">
-          <Button variant="secondary" size="cta" onClick={() => { create.reset(); setView("summary"); }}>
+          <Button variant="secondary" size="cta" onClick={() => { mutation.reset(); setView("summary"); }}>
             내용 다시 보기
           </Button>
           <Button size="cta" onClick={() => submit(answers)}>다시 분석하기</Button>
@@ -169,6 +271,7 @@ function Intake() {
     return (
       <Summary
         answers={answers}
+        editable={flow === "followup" ? FOLLOW_UP_KEYS : undefined}
         onEdit={edit}
         // 처음 질문부터 다시 묻되, 고른 답은 표시해 둔다.
         onRestart={() => {
@@ -183,7 +286,12 @@ function Intake() {
 
   return (
     <main className="flex flex-1 flex-col gap-5 px-4 pt-[25px] pb-8">
-      <ChatBubble from="assistant">{"지금 불편한 점을 몇 가지 여쭤볼게요.\n답을 고르면 바로 다음 질문으로 넘어가요."}</ChatBubble>
+      {lead}
+      <ChatBubble from="assistant">
+        {flow === "followup"
+          ? "고민과 증상은 지난번 그대로 두고,\n지금 가능한 관리 방법만 다시 여쭤볼게요."
+          : "지금 불편한 점을 몇 가지 여쭤볼게요.\n답을 고르면 바로 다음 질문으로 넘어가요."}
+      </ChatBubble>
       {answered.map((step) => (
         <div key={step.key} className="flex flex-col gap-3">
           <ChatBubble from="assistant">{step.question}</ChatBubble>
@@ -251,11 +359,14 @@ function Choices({ step, initial, onAnswer }: { step: Step; initial: unknown; on
 /** Figma "2-2-3 상담 내용 확인 및 수정"(420:1933) */
 function Summary({
   answers,
+  editable,
   onEdit,
   onRestart,
   onConfirm,
 }: {
   answers: Answers;
+  /** 고칠 수 있는 항목 (없으면 전부). 후속 상담은 관리 시간·제품·목표만 */
+  editable?: (keyof ConsultRequest)[];
   onEdit: (key: keyof ConsultRequest) => void;
   onRestart: () => void;
   onConfirm: () => void;
@@ -291,9 +402,11 @@ function Summary({
             <p className="type-label text-muted-foreground">
               <DotList items={[labelOf(SEVERITY_OPTIONS, a.severity), labelOf(CHANGE_OPTIONS, a.change)]} />
             </p>
-            <button type="button" onClick={() => onEdit("kind")} className="w-fit type-caption text-subtle-foreground underline">
-              수정하기
-            </button>
+            {(!editable || editable.includes("kind")) && (
+              <button type="button" onClick={() => onEdit("kind")} className="w-fit type-caption text-subtle-foreground underline">
+                수정하기
+              </button>
+            )}
           </div>
           <dl className="flex flex-col gap-5">
             {rows.map((row) => (
@@ -304,14 +417,16 @@ function Summary({
                     <DotList items={row.value.filter(Boolean)} />
                   </dd>
                 </div>
-                <button
-                  type="button"
-                  aria-label={`${row.label} 고치기`}
-                  onClick={() => onEdit(row.key)}
-                  className="flex size-8 shrink-0 items-center justify-center"
-                >
-                  <Icon name="edit" />
-                </button>
+                {(!editable || editable.includes(row.key)) && (
+                  <button
+                    type="button"
+                    aria-label={`${row.label} 고치기`}
+                    onClick={() => onEdit(row.key)}
+                    className="flex size-8 shrink-0 items-center justify-center"
+                  >
+                    <Icon name="edit" />
+                  </button>
+                )}
               </div>
             ))}
           </dl>
@@ -329,12 +444,15 @@ function Summary({
   );
 }
 
-function Analyzing({ referral }: { referral: boolean }) {
+function Analyzing({ referral, followUp }: { referral: boolean; followUp?: boolean }) {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-16 text-center" aria-live="polite">
       <Image src="/images/consult-character.png" alt="" width={122} height={130} className="animate-pulse" />
-      <p className="type-section">{referral ? "안내를 준비하고 있어요" : "피부 상태를 분석하고 있어요"}</p>
-      {!referral && (
+      <p className="type-section">
+        {referral ? "안내를 준비하고 있어요" : followUp ? "지금 상황에 맞는 루틴을 만들고 있어요" : "피부 상태를 분석하고 있어요"}
+      </p>
+      {followUp && <p className="type-body text-muted-foreground">지난 분석을 바탕으로 루틴만 다시 만들어요.<br />처음에는 30초 정도 걸릴 수 있어요.</p>}
+      {!referral && !followUp && (
         <p className="type-body text-muted-foreground">
           원인과 관리 방법, 루틴을 함께 만들고 있어요.
           <br />
