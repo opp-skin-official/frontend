@@ -2,6 +2,10 @@
   // Cloudflare Workers 배포 설정 (@opennextjs/cloudflare). main·assets는 빌드 결과 경로라 바꾸지 않는다.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "opp-skin-frontend",
+  // 팀 Cloudflare 계정 (opp.skin 도메인이 있는 계정)
+  "account_id": "58cfee7df17af72779c13724e0594ad2",
+  // opp.skin에 연결. DNS가 같은 계정 Cloudflare라 레코드·인증서는 자동으로 만들어진다.
+  "routes": [{ "pattern": "opp.skin", "custom_domain": true }],
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-11-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -14,5 +18,4 @@
     { "binding": "WORKER_SELF_REFERENCE", "service": "opp-skin-frontend" }
   ],
   "observability": { "enabled": true }
-  // 도메인(opp.skin 또는 app.opp.skin)은 정해지면 Cloudflare 대시보드 Workers > 설정 > 도메인에서 연결한다.
 }

@@ -23,7 +23,7 @@ npm run dev        # http://localhost:3000
 - Git 자동 배포(Workers Builds): Cloudflare 대시보드 > Workers > 저장소 연결
   - 빌드 명령 `npx opennextjs-cloudflare build`, 배포 명령 `npx opennextjs-cloudflare deploy`
   - 빌드 변수 `NEXT_PUBLIC_API_BASE_URL=https://api.opp.skin`
-- 도메인: 대시보드 Workers > `opp-skin-frontend` > 설정 > 도메인에서 `opp.skin`(또는 `app.opp.skin`) 추가. DNS가 Cloudflare라 레코드는 자동으로 만들어진다.
+- 계정·도메인: `wrangler.jsonc`의 `account_id`(팀 계정, `opp.skin` 도메인이 있는 곳)와 `routes`(`opp.skin` 커스텀 도메인). 배포하면 DNS 레코드·인증서가 자동으로 만들어진다. 배포하려면 그 계정 멤버로 초대받아 `npx wrangler login`
 - 로그인 쿠키를 같이 쓰려면 프론트가 `opp.skin` 아래여야 하고, 백엔드 `.env`의 `FRONTEND_URL`·`CORS_ALLOWED_ORIGINS`를 그 주소로 맞춘다.
 
 주의: `cacheComponents`·`partialPrefetching`은 꺼 두었다. `@opennextjs/cloudflare` 1.20에서 켜면 Workers에서 모든 페이지가 응답 없이 멈춘다(빌드 경고, opennextjs-cloudflare PR #1318). 이미지 최적화도 Workers에 없어 `images.unoptimized`.
