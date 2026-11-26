@@ -77,7 +77,7 @@ export async function sendMessage(conversationId: number, content: string, handl
     return;
   }
   if (!response.ok || !response.body) {
-    handlers.onError(response.status === 401 ? "로그인이 필요해요." : "질문을 보내지 못했어요. 잠시 후 다시 시도해 주세요.");
+    handlers.onError(await sendFailureMessage(response));
     return;
   }
 
@@ -144,4 +144,14 @@ export function toUserQuestion(question: string): string | null {
     if (pattern.test(q)) return q.replace(pattern, replacement);
   }
   return q;
+}
+
+/** 질문 보내기가 스트림을 열기 전에 실패했을 때 보여 줄 문구 (429: 하루 질문 횟수 초과는 서버 문구 그대로) */
+async function sendFailureMessage(response: Response): Promise<string> {
+  if (response.status === 401) return "로그인이 필요해요.";
+  if (response.status === 429) {
+    const body = (await response.json().catch(() => null)) as { detail?: string } | null;
+    return body?.detail ?? "오늘 질문할 수 있는 횟수를 다 썼어요. 나중에 다시 이용해 주세요.";
+  }
+  return "질문을 보내지 못했어요. 잠시 후 다시 시도해 주세요.";
 }
