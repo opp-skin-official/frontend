@@ -51,3 +51,17 @@ export function useDeleteAccount() {
     },
   });
 }
+
+/** 필수 약관(이용약관, 개인정보 수집·이용)에 동의한다. version은 화면에 보여 준 약관 버전. */
+export function useAgreeTerms() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (version: string) => {
+      const { error, response } = await api.POST("/api/me/terms", { body: { version } });
+      if (response.status !== 204) {
+        throw new Error((error as { detail?: string } | undefined)?.detail ?? "동의를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.");
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries(),
+  });
+}
