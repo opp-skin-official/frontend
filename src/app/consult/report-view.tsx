@@ -24,6 +24,7 @@ import {
   useConsultation,
   useRegenerateRoutine,
 } from "@/lib/consult";
+import { useRecommendations, won } from "@/lib/products";
 
 const DEFAULT_NOTICE = "이 안내는 피부 상태 관찰과 일상 관리 참고용이며, 의학적 판단이나 개선 보장이 아니에요.";
 
@@ -139,15 +140,7 @@ function Report({ consult, report }: { consult: ConsultView; report: ReportView 
         </p>
       )}
 
-      {recommended.length > 0 && (
-        <section aria-label="추천 성분" className="flex flex-col gap-3 pt-2">
-          <h2 className="type-body-strong">추천 성분</h2>
-          <div className="flex flex-wrap gap-1.5">
-            {recommended.map((g) => <Chip key={g.key} variant="outline">{g.labelKo ?? g.key}</Chip>)}
-          </div>
-          <p className="type-caption text-muted-foreground">PX 제품 추천은 제품 정보가 준비되면 보여 드릴게요.</p>
-        </section>
-      )}
+      <RecommendedProducts consultationId={consult.id!} ingredients={recommended.map((g) => g.labelKo ?? g.key ?? "")} />
 
       <section aria-label="추천 루틴" className="flex flex-col gap-3 pt-2">
         <h2 className="type-body-strong">추천 루틴</h2>
@@ -157,6 +150,68 @@ function Report({ consult, report }: { consult: ConsultView; report: ReportView 
       {report.routine && <ApplyRoutine id={consult.id!} applied={report.appliedPlanId != null} />}
       <p className="pt-2 type-caption text-subtle-foreground">{report.notice ?? DEFAULT_NOTICE}</p>
     </>
+  );
+}
+
+/**
+ * Figma "추천제품": 이미지 · 특징 칩 · 이름 · 가격 · >. 이 상담 리포트의 성분으로 궁합 점수순 상위 3개.
+ * 제품 데이터가 없으면 추천 성분만 보여 준다.
+ */
+function RecommendedProducts({ consultationId, ingredients }: { consultationId: number; ingredients: string[] }) {
+  const { data, isPending } = useRecommendations({ consultationId, limit: 3 }, true);
+  const items = data?.items ?? [];
+  if (isPending) return null;
+  if (items.length === 0) {
+    if (ingredients.length === 0) return null;
+    return (
+      <section aria-label="추천 성분" className="flex flex-col gap-3 pt-2">
+        <h2 className="type-body-strong">추천 성분</h2>
+        <div className="flex flex-wrap gap-1.5">
+          {ingredients.map((g) => <Chip key={g} variant="outline">{g}</Chip>)}
+        </div>
+        <p className="type-caption text-muted-foreground">PX 제품 추천은 제품 정보가 준비되면 보여 드릴게요.</p>
+      </section>
+    );
+  }
+  return (
+    <section aria-label="추천제품" className="flex flex-col gap-3 pt-2">
+      <h2 className="type-body-strong">추천제품</h2>
+      <ul className="flex flex-col gap-3">
+        {items.map((r) => {
+          const p = r.product!;
+          const reason = r.reasons?.[0]?.split(":")[0].replace("리포트 추천 성분 ", "");
+          return (
+            <li key={p.id}>
+              <Link
+                href={`/products/${p.id}`}
+                className="flex items-center gap-4 rounded-panel border border-border bg-secondary px-4 py-4"
+              >
+                <span className="flex size-[90px] shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-surface">
+                  {p.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={p.imageUrl} alt="" className="max-h-[80px] max-w-[80px] object-contain" />
+                  ) : (
+                    <span className="type-caption text-subtle-foreground">이미지 준비 중</span>
+                  )}
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <span className="flex flex-wrap gap-1">
+                    {r.score != null && <Chip variant="brand">궁합 {r.score}점</Chip>}
+                    {reason && <Chip variant="outline">{reason}</Chip>}
+                  </span>
+                  <span className="truncate type-body-strong">{p.name}</span>
+                  <span className="type-body-strong">{won(p.price ?? 0)}</span>
+                  {(r.cautions ?? []).length > 0 && (
+                    <span className="truncate type-caption text-caution">{r.cautions![0]}</span>
+                  )}
+                </span>
+                <span aria-hidden className="text-lg">›</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 

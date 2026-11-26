@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { type ProductSummary, useToggleMyProduct, won } from "@/lib/products";
 
-/** 제품 카드 (Figma "4-1제품추천"). 매칭률 배지는 매칭 기능 이후에 붙인다. */
-export function ProductCard({ product }: { product: ProductSummary }) {
+/** 제품 카드 (Figma "4-1제품추천"). matchScore가 있으면 왼쪽 위에 궁합 점수 배지. */
+export function ProductCard({ product, matchScore }: { product: ProductSummary; matchScore?: number | null }) {
   const toggle = useToggleMyProduct();
   return (
     <div className="relative flex flex-col overflow-hidden rounded-[20px] bg-surface shadow-[0_1px_4px_rgba(0,0,0,0.15)]">
@@ -27,6 +27,11 @@ export function ProductCard({ product }: { product: ProductSummary }) {
           </span>
         </span>
       </Link>
+      {matchScore != null && (
+        <span className="absolute top-2 left-2 rounded-[11px] bg-brand px-2 py-0.5 type-caption font-semibold">
+          궁합 {matchScore}점
+        </span>
+      )}
       <button
         type="button"
         aria-label={product.interested ? `${product.name} 관심 해제` : `${product.name} 관심 등록`}

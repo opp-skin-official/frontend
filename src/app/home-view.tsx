@@ -9,6 +9,8 @@ import { Icon } from "@/components/app/icon";
 import { SectionHeader } from "@/components/app/section-header";
 import { useMe } from "@/lib/auth";
 import { useConversations } from "@/lib/chat";
+import { useRecommendations } from "@/lib/products";
+import { ProductCard } from "@/components/app/product-card";
 import { useTodayRoutine } from "@/lib/routine";
 import { useLatestAssessment } from "@/lib/survey";
 
@@ -16,7 +18,7 @@ import { useLatestAssessment } from "@/lib/survey";
  * Figma "1. 홈"(499:808).
  * - 나의 집중 관리: 진행 중인 관리 계획의 D-day. 없으면 계획 만들기로 안내한다.
  * - 상담 시작은 문진 상담(/consult)으로 연결하고, 최근 상담은 문진 상담·피부 Q&A 목록을 보여 준다.
- * - 추천 상품은 기능이 생기기 전까지 빈 상태로 보여 준다.
+ * - 추천 상품은 맞춤 추천(피부 유형·최근 상담 리포트·주의 성분) 궁합 점수순 상위 2개.
  */
 export function HomeView() {
   const me = useMe();
@@ -56,9 +58,9 @@ export function HomeView() {
         {loggedIn ? <SkinInfoCard /> : <EmptyCard text="로그인하면 내 피부 정보를 볼 수 있어요." />}
       </div>
 
-      <SectionHeader title="추천 상품" />
+      <SectionHeader title="추천 상품" moreHref={loggedIn ? "/products" : undefined} />
       <div className="px-4 pt-1 pb-8">
-        <EmptyCard text="피부 유형에 맞춘 PX 제품 추천을 준비하고 있어요." />
+        {loggedIn ? <RecommendedProducts /> : <EmptyCard text="로그인하면 피부에 맞는 PX 제품을 추천해 드려요." />}
       </div>
 
       <SectionHeader title="최근 상담 리스트" />
@@ -134,6 +136,27 @@ function SkinInfoCard() {
         ))}
       </span>
     </Link>
+  );
+}
+
+function RecommendedProducts() {
+  const { data, isPending, isError } = useRecommendations({ limit: 2 }, true);
+  if (isPending) return <EmptyCard text="불러오는 중…" />;
+  if (isError) return <EmptyCard text="추천 상품을 불러오지 못했어요." />;
+  if (!data || (data.items ?? []).length === 0) {
+    return <EmptyCard text="피부 유형에 맞춘 PX 제품 추천을 준비하고 있어요." />;
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-2 gap-3">
+        {(data.items ?? []).map((r) => <ProductCard key={r.product!.id} product={r.product!} matchScore={r.score} />)}
+      </div>
+      {!data.hasSkinType && (
+        <Link href="/survey" className="type-caption text-muted-foreground underline">
+          피부 유형 진단을 하면 궁합 점수를 볼 수 있어요
+        </Link>
+      )}
+    </div>
   );
 }
 
