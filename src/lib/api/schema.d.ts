@@ -845,6 +845,8 @@ export interface components {
             imageUrl?: string;
             interested?: boolean;
             owned?: boolean;
+            /** Format: int32 */
+            matchScore?: number;
         };
         ReviewPage: {
             /** Format: double */
