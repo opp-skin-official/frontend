@@ -6,6 +6,8 @@ import type { components } from "@/lib/api/schema";
 
 export type ProductSummary = components["schemas"]["ProductSummary"];
 export type ProductDetail = components["schemas"]["ProductDetail"];
+export type Recommendation = components["schemas"]["Recommendation"];
+export type Recommendations = components["schemas"]["Recommendations"];
 export type Category = NonNullable<ProductSummary["category"]>;
 export type SkinFit = NonNullable<ProductDetail["skinFits"]>[number];
 export type MyProductKind = components["schemas"]["MyProductRequest"]["kind"];
@@ -122,6 +124,24 @@ export function useToggleMyProduct() {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["product"] });
       queryClient.invalidateQueries({ queryKey: ["my-products"] });
+    },
+  });
+}
+
+/**
+ * 맞춤 추천: 피부 유형 + 상담 리포트(consultationId, 없으면 최근 리포트) + 주의 성분으로 궁합 점수순.
+ * 점수(score)는 설문 결과가 없으면 null.
+ */
+export function useRecommendations(options: { consultationId?: number; limit?: number }, enabled: boolean) {
+  return useQuery({
+    queryKey: ["recommendations", options.consultationId ?? null, options.limit ?? 10],
+    enabled,
+    queryFn: async () => {
+      const { data, response } = await api.GET("/api/products/recommendations", {
+        params: { query: { consultationId: options.consultationId, limit: options.limit ?? 10 } },
+      });
+      if (!data) throw new Error(`recommendations failed: ${response.status}`);
+      return data;
     },
   });
 }
