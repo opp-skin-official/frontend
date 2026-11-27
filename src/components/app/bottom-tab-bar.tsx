@@ -19,6 +19,8 @@ export function BottomTabBar() {
   return (
     <nav
       aria-label="주요 메뉴"
+      // 페이지 이동 모션에서 탭바는 움직이지 않는다(globals.css의 tab-bar).
+      style={{ viewTransitionName: "tab-bar" }}
       className="sticky bottom-0 z-10 grid grid-cols-5 border-t border-border bg-background pb-[max(22px,env(safe-area-inset-bottom))]"
     >
       {TABS.map((tab) => {
