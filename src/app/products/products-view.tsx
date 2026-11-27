@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { type Ref, useState } from "react";
 import { ProductCard } from "@/components/app/product-card";
 import { RequireLogin } from "@/components/app/require-login";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
   useProducts,
 } from "@/lib/products";
 import { useLatestAssessment } from "@/lib/survey";
+import { useMorph } from "@/lib/morph";
 import { cn } from "@/lib/utils";
 
 /** Figma "4-1제품추천"(171:2219, 171:2371) */
@@ -33,6 +34,7 @@ function Content() {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<ProductFilters>(EMPTY);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { panelRef: sheetRef, mounted: sheetMounted, capture: captureSheet } = useMorph<HTMLDivElement>(sheetOpen);
   // 필터 시트에서 제품 유형을 고르면 탭보다 우선한다.
   const query = { ...filters, categories: filters.categories.length ? filters.categories : TABS[tab].categories };
   const products = useProducts(query, true);
@@ -79,7 +81,10 @@ function Content() {
         />
         <button
           type="button"
-          onClick={() => setSheetOpen(true)}
+          onClick={(e) => {
+            captureSheet(e.currentTarget);
+            setSheetOpen(true);
+          }}
           aria-label={`제품 필터${activeFilterCount ? ` ${activeFilterCount}개 적용됨` : ""}`}
           className={cn(
             "h-[42px] rounded-full border px-4 type-caption",
@@ -114,8 +119,10 @@ function Content() {
           </Button>
         </div>
       )}
-      {sheetOpen && (
+      {sheetMounted && (
         <FilterSheet
+          panelRef={sheetRef}
+          open={sheetOpen}
           initial={filters}
           onClose={() => setSheetOpen(false)}
           onApply={(f) => {
@@ -144,11 +151,16 @@ function SkinTypeBanner() {
   );
 }
 
+/** 필터 버튼이 스프링으로 부풀어 시트가 되고(useMorph), 닫으면 버튼 자리로 줄어든다. */
 function FilterSheet({
+  panelRef,
+  open,
   initial,
   onClose,
   onApply,
 }: {
+  panelRef: Ref<HTMLDivElement>;
+  open: boolean;
   initial: ProductFilters;
   onClose: () => void;
   onApply: (f: ProductFilters) => void;
@@ -157,15 +169,22 @@ function FilterSheet({
   const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
   return (
-    <div className="fixed inset-0 z-20 flex items-end justify-center bg-black/40" onClick={onClose}>
+    <div
+      className={cn(
+        "fixed inset-0 z-20 flex items-end justify-center bg-black/40 duration-300",
+        open ? "animate-in fade-in-0" : "pointer-events-none animate-out fade-out-0 fill-mode-forwards",
+      )}
+      onClick={onClose}
+    >
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="제품 필터"
         onClick={(e) => e.stopPropagation()}
         className="flex w-full max-w-[402px] flex-col gap-5 rounded-t-[24px] bg-background px-5 pt-6 pb-8"
       >
-        <div className="flex items-center justify-between">
+        <div data-morph-item className="flex items-center justify-between">
           <h2 className="type-section">제품 필터</h2>
           <button type="button" aria-label="닫기" onClick={onClose} className="text-xl">×</button>
         </div>
@@ -174,7 +193,7 @@ function FilterSheet({
         <ChipGroup label="피부 특성" options={SKIN_OPTIONS} isOn={(v) => f.skins.includes(v)} onToggle={(v) => setF((p) => ({ ...p, skins: toggle(p.skins, v) }))} />
         <ChipGroup label="가격대" options={PRICE_OPTIONS} isOn={(v) => f.prices.includes(v)} onToggle={(v) => setF((p) => ({ ...p, prices: toggle(p.prices, v) }))} />
         <ChipGroup label="정렬" options={SORT_OPTIONS} isOn={(v) => f.sort === v} onToggle={(v) => setF((p) => ({ ...p, sort: v }))} />
-        <div className="grid grid-cols-[auto_1fr] gap-3">
+        <div data-morph-item className="grid grid-cols-[auto_1fr] gap-3">
           <Button variant="secondary" size="cta" onClick={() => setF(EMPTY)}>초기화</Button>
           <Button size="cta" onClick={() => onApply(f)}>확인</Button>
         </div>
@@ -195,7 +214,7 @@ function ChipGroup<T extends string>({
   onToggle: (v: T) => void;
 }) {
   return (
-    <fieldset className="flex flex-col gap-2">
+    <fieldset data-morph-item className="flex flex-col gap-2">
       <legend className="mb-2 type-body-strong">{label}</legend>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (

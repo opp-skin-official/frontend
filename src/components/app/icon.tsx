@@ -2,11 +2,6 @@ import Image from "next/image";
 
 // Figma에서 내려받은 아이콘 (public/icons). 크기는 원본 SVG 크기를 그대로 쓴다.
 const ICONS = {
-  "tab-home": [24, 24],
-  "tab-chat": [23, 24],
-  "tab-profile": [24, 24],
-  "tab-products": [24, 24],
-  "tab-settings": [24, 24],
   "chevron-right": [24, 24],
   "arrow-circle": [27, 27],
   "arrow-up-right-circle": [40, 40],
