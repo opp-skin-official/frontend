@@ -191,3 +191,67 @@
   line-height: 12px;
   font-weight: 400;
 }
+
+/* ── 페이지 이동 모션 (src/app/template.tsx). 뒤로 가기 모션은 template.tsx에서 직접 ── */
+:root {
+  --page-exit: 140ms;
+  --page-enter: 260ms;
+  --page-move: 420ms;
+  /* morph.ts SPRING과 같은 곡선 */
+  --ease-spring: linear(0, 0.028, 0.1, 0.201, 0.318, 0.44, 0.559, 0.67, 0.769, 0.854, 0.924, 0.98, 1.021, 1.051, 1.07,
+    1.08, 1.084, 1.081, 1.076, 1.067, 1.058, 1.047, 1.037, 1.028, 1.02, 1.013, 1.007, 1.002, 0.998, 0.996, 0.994,
+    0.993, 0.993, 0.993, 0.994, 0.994, 1);
+}
+
+/* 기본: 이전 페이지는 빨리 흐려지고, 새 페이지는 조금 아래에서 떠오르며 나타난다. */
+::view-transition-old(.page) {
+  animation: var(--page-exit) ease-in both page-fade reverse;
+}
+::view-transition-new(.page) {
+  animation:
+    var(--page-enter) ease-out var(--page-exit) both page-fade,
+    var(--page-move) var(--ease-spring) both page-rise;
+}
+
+@keyframes page-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes page-rise {
+  from {
+    translate: 0 14px;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+/* 하단 탭바는 페이지가 바뀌어도 제자리에 둔다. */
+::view-transition-group(tab-bar) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(tab-bar) {
+  display: none;
+}
+::view-transition-new(tab-bar) {
+  animation: none;
+}
+
+/* 전환 중에도 누를 수 있게 */
+::view-transition {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
