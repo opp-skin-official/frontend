@@ -6,6 +6,7 @@ import { RequireLogin } from "@/components/app/require-login";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useDeleteAccount, useLogout } from "@/lib/auth";
+import { useMorph } from "@/lib/morph";
 
 /** Figma "5 설정"(175:2964) 중 지금 동작하는 항목만: 계정, 내 피부 프로필, 서비스 이용 안내, 로그아웃, 회원 탈퇴 */
 export function SettingsView() {
@@ -44,14 +45,19 @@ export function SettingsView() {
 /** 회원 탈퇴: 한 번 더 확인한 뒤 지운다. */
 function DeleteAccount({ onDeleted }: { onDeleted: () => void }) {
   const [confirming, setConfirming] = useState(false);
+  const { panelRef, mounted, capture } = useMorph<HTMLElement>(confirming);
   const deletion = useDeleteAccount();
 
-  if (!confirming) {
+  // 버튼이 확인 카드로 부풀고, 취소하면 다시 버튼으로 줄어든다.
+  if (!mounted) {
     return (
       <button
         type="button"
         className="self-center type-caption text-muted-foreground underline"
-        onClick={() => setConfirming(true)}
+        onClick={(e) => {
+          capture(e.currentTarget);
+          setConfirming(true);
+        }}
       >
         회원 탈퇴
       </button>
@@ -59,16 +65,17 @@ function DeleteAccount({ onDeleted }: { onDeleted: () => void }) {
   }
   return (
     <section
+      ref={panelRef}
       role="alertdialog"
       aria-labelledby="delete-account-title"
       className="flex flex-col gap-3 rounded-panel border border-border bg-surface px-[22px] py-5"
     >
-      <p id="delete-account-title" className="type-body-strong">정말 탈퇴할까요?</p>
-      <p className="type-caption text-muted-foreground">
+      <p data-morph-item id="delete-account-title" className="type-body-strong">정말 탈퇴할까요?</p>
+      <p data-morph-item className="type-caption text-muted-foreground">
         피부 유형 설문, 상담·리포트, AI 채팅, 루틴·경과 기록, 내 제품·리뷰, 주의 성분이 바로 모두 지워지고 되돌릴 수 없어요.
       </p>
       {deletion.isError && <p className="type-caption text-destructive">{deletion.error.message}</p>}
-      <div className="grid grid-cols-2 gap-2">
+      <div data-morph-item className="grid grid-cols-2 gap-2">
         <Button variant="secondary" disabled={deletion.isPending} onClick={() => setConfirming(false)}>
           취소
         </Button>

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Chip } from "@/components/app/chip";
 import { RequireLogin } from "@/components/app/require-login";
 import { Button } from "@/components/ui/button";
+import { useMorph } from "@/lib/morph";
 import { SKIN_OPTIONS, useProductDetail, useToggleMyProduct, won } from "@/lib/products";
 import { ReviewsSection } from "./reviews-section";
 
@@ -24,6 +25,8 @@ function Content() {
   const { data, isPending, isError } = useProductDetail(id, valid);
   const toggle = useToggleMyProduct();
   const [showAll, setShowAll] = useState(false);
+  const { panelRef: ingredientsRef, mounted: ingredientsMounted, capture: captureIngredients } =
+    useMorph<HTMLParagraphElement>(showAll);
 
   if (!valid || data === null) return <p className="px-4 py-8 type-body text-muted-foreground">제품을 찾을 수 없어요.</p>;
   if (isPending) return <p className="px-4 py-8 type-body text-muted-foreground">불러오는 중…</p>;
@@ -80,10 +83,20 @@ function Content() {
 
       {data.fullIngredients && (
         <section className="flex flex-col gap-2 px-4">
-          <button type="button" aria-expanded={showAll} onClick={() => setShowAll(!showAll)} className="flex justify-between type-body-strong">
+          <button
+            type="button"
+            aria-expanded={showAll}
+            onClick={(e) => {
+              captureIngredients(e.currentTarget);
+              setShowAll(!showAll);
+            }}
+            className="flex justify-between type-body-strong"
+          >
             전성분 <span aria-hidden>{showAll ? "−" : "+"}</span>
           </button>
-          {showAll && <p className="type-caption text-muted-foreground">{data.fullIngredients}</p>}
+          {ingredientsMounted && (
+            <p ref={ingredientsRef} className="type-caption text-muted-foreground">{data.fullIngredients}</p>
+          )}
         </section>
       )}
 
