@@ -159,6 +159,42 @@ test.describe("로그인 후", () => {
     await expect(page.getByRole("region", { name: "실천 팁" })).toHaveCount(0); // 본문에 있는 팁을 따로 또 보여 주지 않는다
   });
 
+  test("AI 채팅: 답변을 신고하면 사유를 골라 보내고 완료 안내를 보여 준다", async ({ page }) => {
+    const posted: unknown[] = [];
+    const answer = data.conversation.messages!.find((m) => m.role === "ASSISTANT")!;
+    await page.route(`${API_ORIGIN}/api/conversations/${data.conversation.id}/messages/${answer.id}/reports`, async (route) => {
+      const cors = {
+        "access-control-allow-origin": route.request().headers()["origin"] ?? "*",
+        "access-control-allow-credentials": "true",
+        "access-control-allow-methods": "POST",
+        "access-control-allow-headers": "Content-Type,X-XSRF-TOKEN",
+      };
+      if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers: cors });
+      posted.push(route.request().postDataJSON());
+      return route.fulfill({ status: 204, headers: cors });
+    });
+
+    await page.goto(`/chat/${data.conversation.id}`);
+    await page.getByRole("button", { name: "이 답변 신고" }).click();
+    const dialog = page.getByRole("dialog", { name: "이 답변을 신고할까요?" });
+    const send = dialog.getByRole("button", { name: "보내기" });
+    await expect(send).toBeDisabled(); // 사유를 고르기 전에는 보낼 수 없다
+    await dialog.getByLabel("진단·처방처럼 말해요").check();
+    await dialog.getByLabel("덧붙일 내용 (선택)").fill("  병원 처방처럼 들려요 ");
+    await send.click();
+
+    await expect(page.getByRole("status")).toHaveText("신고했어요. 검토 후 반영할게요.");
+    expect(posted).toEqual([{ reason: "MEDICAL", detail: "병원 처방처럼 들려요" }]);
+  });
+
+  test("상담 리포트: 리포트 신고 버튼이 있다", async ({ page }) => {
+    await page.goto(`/consult/${data.consultation.id}`);
+    await page.getByRole("button", { name: "이 리포트 신고" }).click();
+    await expect(page.getByRole("dialog", { name: "이 리포트를 신고할까요?" })).toBeVisible();
+    await page.getByRole("button", { name: "취소" }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  });
+
   test("피부 유형 설문: 동의 → 첫 문항과 선택지", async ({ page }) => {
     await page.goto("/survey");
     await page.getByRole("button", { name: "시작하기" }).click(); // 민감정보 동의 단계 다음
