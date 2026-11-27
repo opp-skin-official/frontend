@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Chip } from "@/components/app/chip";
+import { ReportAiContent } from "@/components/app/report-ai-content";
 import { RequireLogin } from "@/components/app/require-login";
 import { Button } from "@/components/ui/button";
 import { DotList } from "@/components/app/dot-list";
@@ -24,6 +25,7 @@ import {
   useConsultation,
   useRegenerateRoutine,
 } from "@/lib/consult";
+import { reportConsultation } from "@/lib/ai-report";
 import { useRecommendations, won } from "@/lib/products";
 
 const DEFAULT_NOTICE = "이 안내는 피부 상태 관찰과 일상 관리 참고용이며, 의학적 판단이나 개선 보장이 아니에요.";
@@ -149,6 +151,11 @@ function Report({ consult, report }: { consult: ConsultView; report: ReportView 
 
       {report.routine && <ApplyRoutine id={consult.id!} applied={report.appliedPlanId != null} />}
       <p className="pt-2 type-caption text-subtle-foreground">{report.notice ?? DEFAULT_NOTICE}</p>
+      <ReportAiContent
+        label="이 리포트 신고"
+        title="이 리포트를 신고할까요?"
+        onSubmit={(body) => reportConsultation(consult.id!, body)}
+      />
     </>
   );
 }

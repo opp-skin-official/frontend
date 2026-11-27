@@ -148,6 +148,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/conversations/{id}/messages/{messageId}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reportMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/consultations": {
         parameters: {
             query?: never;
@@ -174,6 +190,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["regenerateRoutine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/consultations/{id}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reportConsultation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -678,6 +710,11 @@ export interface components {
         SseEmitter: {
             /** Format: int64 */
             timeout?: number;
+        };
+        ReportRequest: {
+            /** @enum {string} */
+            reason: "OFFENSIVE" | "HARMFUL" | "MEDICAL" | "INACCURATE" | "OTHER";
+            detail?: string;
         };
         ConsultRequest: {
             /** @enum {string} */
@@ -1259,6 +1296,31 @@ export interface operations {
             };
         };
     };
+    reportMessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                messageId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     create_1: {
         parameters: {
             query?: never;
@@ -1302,6 +1364,30 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["ConsultView"];
                 };
+            };
+        };
+    };
+    reportConsultation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

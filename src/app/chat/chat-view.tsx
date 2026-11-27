@@ -6,7 +6,9 @@ import { useEffect, useRef, useState } from "react";
 import { ChatBubble } from "@/components/app/chat-bubble";
 import { ChatMarkdown } from "@/components/app/chat-markdown";
 import { ChatInput } from "@/components/app/chat-input";
+import { ReportAiContent } from "@/components/app/report-ai-content";
 import { RequireLogin } from "@/components/app/require-login";
+import { reportChatAnswer } from "@/lib/ai-report";
 import { type MessageView, createConversation, sendMessage, toUserQuestion, useConversation } from "@/lib/chat";
 import { cn } from "@/lib/utils";
 
@@ -134,6 +136,7 @@ function ChatContent({ nickname }: { nickname: string }) {
           ) : (
             <AssistantMessage
               key={m.id}
+              conversationId={conversationId}
               message={m}
               // 이어서 할 질문은 마지막 답변에만 보여 준다.
               onFollowUp={i === messages.length - 1 && !pending ? ask : undefined}
@@ -184,7 +187,15 @@ function ChatContent({ nickname }: { nickname: string }) {
   );
 }
 
-function AssistantMessage({ message, onFollowUp }: { message: MessageView; onFollowUp?: (q: string) => void }) {
+function AssistantMessage({
+  conversationId,
+  message,
+  onFollowUp,
+}: {
+  conversationId: number | null;
+  message: MessageView;
+  onFollowUp?: (q: string) => void;
+}) {
   const markdown = message.format === "markdown";
   // 마크다운 답변은 실천 팁이 본문에 들어 있어 따로 보여 주지 않는다.
   const tips = markdown ? [] : (message.actionTips ?? []);
@@ -211,6 +222,13 @@ function AssistantMessage({ message, onFollowUp }: { message: MessageView; onFol
         <p className={cn("max-w-[282px] rounded-panel bg-brand px-5 py-3 type-body")}>
           {message.referralNotice ?? "증상이 심하거나 오래가면 의무대나 가까운 의료기관에 상담해 주세요."}
         </p>
+      )}
+      {conversationId != null && message.id != null && (
+        <ReportAiContent
+          label="이 답변 신고"
+          title="이 답변을 신고할까요?"
+          onSubmit={(body) => reportChatAnswer(conversationId, message.id!, body)}
+        />
       )}
       {onFollowUp && followUps.length > 0 && <FollowUps items={followUps} onPick={onFollowUp} />}
     </div>
