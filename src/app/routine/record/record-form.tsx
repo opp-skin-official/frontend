@@ -131,7 +131,7 @@ function Options<T extends string>({
             aria-checked={value === o.value}
             onClick={() => onChange(o.value)}
             className={cn(
-              "h-[52px] rounded-[14px] border type-body",
+              "pressable h-[52px] rounded-[14px] border type-body",
               value === o.value ? "border-brand-strong bg-brand" : "border-border bg-secondary",
             )}
           >

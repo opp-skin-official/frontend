@@ -152,7 +152,7 @@ function QuestionCard({
             aria-checked={selected === o.position}
             onClick={() => onSelect(o.position!)}
             className={cn(
-              "min-h-[47px] rounded-[14px] border px-3 py-2 text-left type-body",
+              "pressable min-h-[47px] rounded-[14px] border px-3 py-2 text-left type-body",
               selected === o.position
                 ? "border-brand-strong bg-brand"
                 : "border-border bg-surface",

@@ -67,7 +67,7 @@ function Form() {
             aria-checked={goalType === g.value}
             onClick={() => setGoalType(g.value)}
             className={cn(
-              "h-[42px] rounded-full border px-5 type-body",
+              "pressable h-[42px] rounded-full border px-5 type-body",
               goalType === g.value ? "border-brand-strong bg-brand" : "border-border bg-surface",
             )}
           >
@@ -114,7 +114,7 @@ function Form() {
               aria-checked={focus === f.value}
               onClick={() => setFocus(f.value)}
               className={cn(
-                "h-[47px] rounded-[14px] border type-body",
+                "pressable h-[47px] rounded-[14px] border type-body",
                 focus === f.value ? "border-brand-strong bg-brand" : "border-border bg-secondary",
               )}
             >

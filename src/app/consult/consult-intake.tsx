@@ -146,7 +146,7 @@ function Intake() {
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-5 px-4 pt-[25px] pb-8">
+    <main data-chat className="flex flex-1 flex-col gap-5 px-4 pt-[25px] pb-8">
       {ask}
       {since === "worse" ? (
         <>
@@ -167,7 +167,7 @@ function Intake() {
               key={o.value}
               type="button"
               onClick={() => (o.value === "same" ? router.push(`/consult/${previous.id}`) : setSince(o.value))}
-              className="rounded-bubble rounded-tr-none border border-brand-strong bg-surface px-4 py-2.5 text-left type-body"
+              className="pressable rounded-bubble rounded-tr-none border border-brand-strong bg-surface px-4 py-2.5 text-left type-body"
             >
               {o.label}
             </button>
@@ -293,7 +293,7 @@ function Questionnaire({ flow, previous, lead }: { flow: Flow; previous?: Consul
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-5 px-4 pt-[25px] pb-8">
+    <main data-chat className="flex flex-1 flex-col gap-5 px-4 pt-[25px] pb-8">
       {lead}
       <ChatBubble from="assistant">
         {flow === "followup"
@@ -319,7 +319,7 @@ function Choices({ step, initial, onAnswer }: { step: Step; initial: unknown; on
   const [picked, setPicked] = useState<unknown[]>(step.multi ? ((initial as unknown[] | undefined) ?? []) : []);
   const chip = (active: boolean) =>
     cn(
-      "rounded-bubble rounded-tr-none border px-4 py-2.5 text-left type-body",
+      "pressable rounded-bubble rounded-tr-none border px-4 py-2.5 text-left type-body",
       active ? "border-brand-strong bg-brand" : "border-brand-strong bg-surface",
     );
 

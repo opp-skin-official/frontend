@@ -127,6 +127,17 @@ test.describe("로그인 후", () => {
     await expect(page.getByText(data.reviews.items![0].content!).first()).toBeVisible();
   });
 
+  test("제품 하트: 누르는 즉시 채워지며 톡 튀고, 관심 등록 요청을 보낸다", async ({ page, api }) => {
+    await page.goto("/products");
+    const product = data.products.items!.find((p) => !p.interested)!;
+    const heart = page.getByRole("button", { name: `${product.name} 관심 등록` });
+    await heart.click();
+    const liked = page.getByRole("button", { name: `${product.name} 관심 해제` });
+    await expect(liked).toHaveAttribute("aria-pressed", "true");
+    await expect(liked.locator("svg")).toHaveAttribute("data-liked", "true");
+    await expect.poll(() => api.calls).toContain("POST /api/my-products");
+  });
+
   test("상담 리포트: 관찰·원인·해결과 루틴", async ({ page }) => {
     await page.goto(`/consult/${data.consultation.id}`);
     const pair = data.consultation.report!.pairs![0];

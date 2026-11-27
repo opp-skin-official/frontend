@@ -6,7 +6,7 @@ export function LinkCard({ href, title }: { href: string; title: string }) {
   return (
     <Link
       href={href}
-      className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-4"
+      className="pressable liftable flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-4"
     >
       <span className="type-chat text-foreground">{title}</span>
       <Icon name="arrow-circle" />
