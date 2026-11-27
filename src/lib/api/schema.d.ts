@@ -858,7 +858,7 @@ export interface components {
             brand?: string;
             name?: string;
             /** @enum {string} */
-            category?: "CLEANSER" | "TONER" | "LOTION" | "ESSENCE" | "CREAM" | "SUNSCREEN";
+            category?: "CLEANSER" | "TONER" | "LOTION" | "ESSENCE" | "CREAM" | "SUNSCREEN" | "MASK_PACK";
             volume?: string;
             /** Format: int32 */
             price?: number;
@@ -893,7 +893,7 @@ export interface components {
             brand?: string;
             name?: string;
             /** @enum {string} */
-            category?: "CLEANSER" | "TONER" | "LOTION" | "ESSENCE" | "CREAM" | "SUNSCREEN";
+            category?: "CLEANSER" | "TONER" | "LOTION" | "ESSENCE" | "CREAM" | "SUNSCREEN" | "MASK_PACK";
             volume?: string;
             /** Format: int32 */
             price?: number;
@@ -1487,7 +1487,7 @@ export interface operations {
     list_2: {
         parameters: {
             query?: {
-                category?: ("CLEANSER" | "TONER" | "LOTION" | "ESSENCE" | "CREAM" | "SUNSCREEN")[];
+                category?: ("CLEANSER" | "TONER" | "LOTION" | "ESSENCE" | "CREAM" | "SUNSCREEN" | "MASK_PACK")[];
                 q?: string;
                 skin?: ("OILY" | "DRY" | "COMBINATION" | "SENSITIVE")[];
                 price?: ("UNDER_10K" | "FROM_10K_TO_20K" | "FROM_20K_TO_30K" | "OVER_30K")[];
