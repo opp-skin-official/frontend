@@ -176,7 +176,9 @@ function RecommendedProducts({ consultationId, ingredients }: { consultationId: 
         <div className="flex flex-wrap gap-1.5">
           {ingredients.map((g) => <Chip key={g} variant="outline">{g}</Chip>)}
         </div>
-        <p className="type-caption text-muted-foreground">PX 제품 추천은 제품 정보가 준비되면 보여 드릴게요.</p>
+        <p className="type-caption text-muted-foreground">
+          아직 조건에 맞는 PX 제품을 찾지 못했어요. 리포트에서 피하라고 한 성분이 든 제품은 추천하지 않아요.
+        </p>
       </section>
     );
   }
