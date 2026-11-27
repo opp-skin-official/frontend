@@ -116,7 +116,7 @@ function Choice<T extends string>({
             aria-checked={value === o.value}
             onClick={() => onChange(o.value)}
             className={cn(
-              "h-[62px] rounded-[16px] border type-body",
+              "pressable h-[62px] rounded-[16px] border type-body",
               value === o.value ? "border-brand-strong bg-brand" : "border-border bg-secondary",
             )}
           >

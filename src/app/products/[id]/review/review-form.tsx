@@ -172,7 +172,7 @@ function Chips({
             type="button"
             aria-pressed={isOn(o)}
             onClick={() => onToggle(o)}
-            className={cn("rounded-[10px] px-3 py-1.5 type-body", isOn(o) ? "bg-brand" : "bg-secondary")}
+            className={cn("pressable rounded-[10px] px-3 py-1.5 type-body", isOn(o) ? "bg-brand" : "bg-secondary")}
           >
             {o}
           </button>

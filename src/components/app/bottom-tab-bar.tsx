@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type TabIconName = "home" | "chat" | "profile" | "products" | "settings";
@@ -14,8 +15,16 @@ const TABS: { href: string; label: string; icon: TabIconName }[] = [
   { href: "/settings", label: "설정", icon: "settings" },
 ];
 
+/** 직전 페이지에서 선택돼 있던 탭(탭바는 페이지마다 새로 그려진다). 바뀐 탭의 아이콘만 톡 튀게 한다. */
+let lastActiveHref: string | null = null;
+
 export function BottomTabBar() {
   const pathname = usePathname();
+  const activeHref = TABS.find((t) => (t.href === "/" ? pathname === "/" : pathname.startsWith(t.href)))?.href ?? null;
+  const [pop] = useState(() => lastActiveHref !== null && lastActiveHref !== activeHref);
+  useEffect(() => {
+    lastActiveHref = activeHref;
+  }, [activeHref]);
   return (
     <nav
       aria-label="주요 메뉴"
@@ -33,7 +42,9 @@ export function BottomTabBar() {
             // 선택한 탭은 아이콘을 검정으로 채우고, 나머지는 선만 있는 빈 아이콘으로 둔다.
             className={cn("flex flex-col items-center gap-0.5 pt-3 type-tab", active ? "text-black" : "text-foreground")}
           >
-            <TabIcon name={tab.icon} filled={active} />
+            <span className={cn("flex", active && pop && "animate-[pop_560ms_var(--ease-bounce)]")}>
+              <TabIcon name={tab.icon} filled={active} />
+            </span>
             {tab.label}
           </Link>
         );

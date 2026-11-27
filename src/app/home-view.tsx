@@ -148,7 +148,7 @@ function RecommendedProducts() {
   }
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="stagger grid grid-cols-2 gap-3">
         {(data.items ?? []).map((r) => <ProductCard key={r.product!.id} product={r.product!} matchScore={r.score} />)}
       </div>
       {!data.hasSkinType && (

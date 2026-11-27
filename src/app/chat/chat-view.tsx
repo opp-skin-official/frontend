@@ -121,7 +121,7 @@ function ChatContent({ nickname }: { nickname: string }) {
 
   return (
     <>
-      <main className="flex flex-1 flex-col gap-5 px-4 pt-[25px] pb-6" aria-live="polite">
+      <main data-chat className="flex flex-1 flex-col gap-5 px-4 pt-[25px] pb-6" aria-live="polite">
         <p className="type-caption text-subtle-foreground">{notice}</p>
         <ChatBubble from="assistant">
           {`안녕하세요, ${nickname}님.\n피부 고민을 편하게 물어보세요.`}
@@ -154,7 +154,7 @@ function ChatContent({ nickname }: { nickname: string }) {
                 <button
                   type="button"
                   onClick={() => ask(pending.content)}
-                  className="rounded-[11px] border border-border bg-surface px-3 py-1 type-caption"
+                  className="pressable rounded-[11px] border border-border bg-surface px-3 py-1 type-caption"
                 >
                   다시 보내기
                 </button>
@@ -243,7 +243,7 @@ function FollowUps({ items, onPick }: { items: string[]; onPick: (q: string) => 
           key={q}
           type="button"
           onClick={() => onPick(q)}
-          className="max-w-[282px] rounded-bubble rounded-tr-none border border-brand-strong bg-surface px-4 py-2.5 text-left type-body"
+          className="pressable max-w-[282px] rounded-bubble rounded-tr-none border border-brand-strong bg-surface px-4 py-2.5 text-left type-body"
         >
           {q}
         </button>

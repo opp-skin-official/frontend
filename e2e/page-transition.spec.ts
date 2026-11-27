@@ -30,7 +30,7 @@ test.beforeEach(async ({ page }) => {
   await mockApi(page);
 });
 
-test("탭을 옮기면 새 페이지가 떠오르며 나타나고, 탭바는 움직이지 않는다", async ({ page }) => {
+test("탭을 옮기면 이전 페이지는 흐려지며 물러나고 새 페이지가 떠오르며, 탭바는 움직이지 않는다", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByTestId("home-greeting")).toContainText("님");
   const animations = await recordNextTransition(page);
@@ -38,8 +38,8 @@ test("탭을 옮기면 새 페이지가 떠오르며 나타나고, 탭바는 움
   await expect(page).toHaveURL(/\/products$/);
 
   const names = await animations();
-  expect(names.join("\n")).toMatch(/::view-transition-new\(.+\) page-rise/);
-  expect(names.join("\n")).toMatch(/::view-transition-old\(.+\) page-fade/);
+  expect(names.join("\n")).toMatch(/::view-transition-new\(.+\) page-in/);
+  expect(names.join("\n")).toMatch(/::view-transition-old\(.+\) page-out/);
   expect(names.filter((n) => n.includes("(tab-bar)"))).toEqual([]); // 탭바는 애니메이션 없음
 });
 

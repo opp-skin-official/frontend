@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-/** AI 비서(왼쪽, 회색) / 사용자(오른쪽, 초록) 말풍선. 모서리 17px, 꼬리 쪽 모서리만 각짐. */
+/** AI 비서(왼쪽, 회색) / 사용자(오른쪽, 초록) 말풍선. 모서리 17px, 꼬리 쪽 모서리만 각짐. 나타날 때 꼬리 쪽에서 톡 튀어나온다. */
 export function ChatBubble({
   from,
   children,
@@ -16,11 +16,11 @@ export function ChatBubble({
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[282px] px-5 py-[18px] type-chat",
+          "bubble-in max-w-[282px] px-5 py-[18px] type-chat",
           !rich && "whitespace-pre-line",
           isUser
-            ? "rounded-bubble rounded-tr-none bg-brand text-bubble-user-foreground"
-            : "rounded-bubble rounded-bl-none bg-secondary text-muted-foreground",
+            ? "origin-top-right rounded-bubble rounded-tr-none bg-brand text-bubble-user-foreground"
+            : "origin-bottom-left rounded-bubble rounded-bl-none bg-secondary text-muted-foreground",
         )}
       >
         {children}

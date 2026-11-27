@@ -87,7 +87,7 @@ function Content() {
           }}
           aria-label={`제품 필터${activeFilterCount ? ` ${activeFilterCount}개 적용됨` : ""}`}
           className={cn(
-            "h-[42px] rounded-full border px-4 type-caption",
+            "pressable h-[42px] rounded-full border px-4 type-caption",
             activeFilterCount ? "border-brand-strong bg-brand" : "border-border bg-surface",
           )}
         >
@@ -104,7 +104,7 @@ function Content() {
           {filters.q || activeFilterCount ? "조건에 맞는 제품이 없어요." : "등록된 PX 제품이 아직 없어요."}
         </p>
       ) : (
-        <ul className="grid grid-cols-2 gap-3 px-4" aria-label="제품 목록">
+        <ul className="stagger grid grid-cols-2 gap-3 px-4" aria-label="제품 목록">
           {items.map((p) => (
             <li key={p.id}>
               <ProductCard product={p} />
@@ -223,7 +223,7 @@ function ChipGroup<T extends string>({
             type="button"
             aria-pressed={isOn(o.value)}
             onClick={() => onToggle(o.value)}
-            className={cn("rounded-[10px] px-3 py-1.5 type-body", isOn(o.value) ? "bg-brand" : "bg-secondary")}
+            className={cn("pressable rounded-[10px] px-3 py-1.5 type-body", isOn(o.value) ? "bg-brand" : "bg-secondary")}
           >
             {o.label}
           </button>
