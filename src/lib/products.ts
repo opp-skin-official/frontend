@@ -14,11 +14,11 @@ export type MyProductKind = components["schemas"]["MyProductRequest"]["kind"];
 export type PriceRange = "UNDER_10K" | "FROM_10K_TO_20K" | "FROM_20K_TO_30K" | "OVER_30K";
 export type Sort = "RECOMMENDED" | "PRICE_ASC" | "PRICE_DESC";
 
-// 문구는 Figma "4-1제품추천" 탭·필터 그대로
+// 문구는 Figma "4-1제품추천" 탭·필터 그대로 (마스크팩은 Figma에 없어 추가: PX 마스크팩, AI 루틴 step_type mask_pack)
 export const TABS: { label: string; categories: Category[] }[] = [
   { label: "전체", categories: [] },
   { label: "클렌저", categories: ["CLEANSER"] },
-  { label: "스킨케어", categories: ["TONER", "LOTION", "ESSENCE", "SUNSCREEN"] },
+  { label: "스킨케어", categories: ["TONER", "LOTION", "ESSENCE", "SUNSCREEN", "MASK_PACK"] },
   { label: "크림", categories: ["CREAM"] },
 ];
 
@@ -28,6 +28,7 @@ export const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
   { value: "LOTION", label: "로션" },
   { value: "CREAM", label: "크림" },
   { value: "SUNSCREEN", label: "선크림" },
+  { value: "MASK_PACK", label: "마스크팩" },
 ];
 
 export const SKIN_OPTIONS: { value: SkinFit; label: string }[] = [
