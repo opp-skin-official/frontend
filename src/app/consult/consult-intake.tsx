@@ -29,6 +29,7 @@ import {
   useLatestConsultation,
 } from "@/lib/consult";
 import { cn } from "@/lib/utils";
+import { FaceMark, regionsOf } from "./face-mark";
 
 type Option = { value: string | number | boolean; label: string };
 
@@ -187,6 +188,10 @@ function Questionnaire({ flow, previous, lead }: { flow: Flow; previous?: Consul
   /** C-02에서 고치려고 돌아온 질문 (답하면 다시 C-02로) */
   const [editing, setEditing] = useState<keyof ConsultRequest | null>(null);
   const [view, setView] = useState<"chat" | "summary">("chat");
+  /** 얼굴표시 화면에서 고른 부위 이름(좌측 이마·목 등). 비어 있으면 기존 6개 부위 칩으로 고른 것 */
+  const [faceAreas, setFaceAreas] = useState<string[]>([]);
+  /** "글로 설명할게요"를 눌러 부위를 대화로 고르기로 했는지 */
+  const [regionsByChat, setRegionsByChat] = useState(false);
   /** 분석이 끝난 상담 (솔루션 보러가기 시트) */
   const [ready, setReady] = useState<ConsultView | null>(null);
   const create = useCreateConsultation();
@@ -257,6 +262,11 @@ function Questionnaire({ flow, previous, lead }: { flow: Flow; previous?: Consul
     setView("chat");
   }
 
+  /** 지난 답 말풍선: 부위는 얼굴표시에서 고른 이름 그대로 */
+  function answeredLabel(step: Step) {
+    return step.key === "regions" && faceAreas.length > 0 ? faceAreas.join(", ") : answerLabel(step, answers[step.key]);
+  }
+
   if (ready) return <SolutionReady consult={ready} onOpen={() => router.replace(`/consult/${ready.id}`)} />;
 
   if (mutation.isPending) return <Analyzing referral={answers.redFlag === true} followUp={flow === "followup"} />;
@@ -279,15 +289,34 @@ function Questionnaire({ flow, previous, lead }: { flow: Flow; previous?: Consul
     return (
       <Summary
         answers={answers}
+        regionNames={faceAreas.length > 0 ? faceAreas : undefined}
         editable={flow === "followup" ? FOLLOW_UP_KEYS : undefined}
         onEdit={edit}
         // 처음 질문부터 다시 묻되, 고른 답은 표시해 둔다.
         onRestart={() => {
           setEditing(null);
           setStepIndex(0);
+          setRegionsByChat(false);
           setView("chat");
         }}
         onConfirm={() => submit(answers)}
+      />
+    );
+  }
+
+  // Figma 2-2 얼굴표시: 부위 질문은 아바타 화면에서 고른다("글로 설명할게요"면 아래 대화로).
+  if (current.key === "regions" && !regionsByChat) {
+    return (
+      <FaceMark
+        initial={faceAreas}
+        onDone={(labels) => {
+          setFaceAreas(labels);
+          answer(regionsOf(labels));
+        }}
+        onText={() => {
+          setFaceAreas([]);
+          setRegionsByChat(true);
+        }}
       />
     );
   }
@@ -303,7 +332,7 @@ function Questionnaire({ flow, previous, lead }: { flow: Flow; previous?: Consul
       {answered.map((step) => (
         <div key={step.key} className="flex flex-col gap-3">
           <ChatBubble from="assistant">{step.question}</ChatBubble>
-          <ChatBubble from="user">{answerLabel(step, answers[step.key])}</ChatBubble>
+          <ChatBubble from="user">{answeredLabel(step)}</ChatBubble>
         </div>
       ))}
       <div className="flex flex-col gap-3">
@@ -367,12 +396,15 @@ function Choices({ step, initial, onAnswer }: { step: Step; initial: unknown; on
 /** Figma "2-2-3 상담 내용 확인 및 수정"(420:1933) */
 function Summary({
   answers,
+  regionNames,
   editable,
   onEdit,
   onRestart,
   onConfirm,
 }: {
   answers: Answers;
+  /** 얼굴표시에서 고른 부위 이름 (있으면 6개 부위 대신 보여 준다) */
+  regionNames?: string[];
   /** 고칠 수 있는 항목 (없으면 전부). 후속 상담은 관리 시간·제품·목표만 */
   editable?: (keyof ConsultRequest)[];
   onEdit: (key: keyof ConsultRequest) => void;
@@ -405,7 +437,7 @@ function Summary({
         <section className="relative flex flex-col gap-6 rounded-panel border border-border bg-secondary px-7 py-7">
           <div className="flex flex-col gap-1.5">
             <p className="type-body-strong">
-              <DotList items={[labelsOf(REGION_OPTIONS, a.regions).join("·"), labelOf(KIND_OPTIONS, a.kind)]} />
+              <DotList items={[(regionNames ?? labelsOf(REGION_OPTIONS, a.regions)).join("·"), labelOf(KIND_OPTIONS, a.kind)]} />
             </p>
             <p className="type-label text-muted-foreground">
               <DotList items={[labelOf(SEVERITY_OPTIONS, a.severity), labelOf(CHANGE_OPTIONS, a.change)]} />

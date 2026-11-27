@@ -158,6 +158,32 @@ test.describe("로그인 후", () => {
       await page.goto("/consult");
       await expect(page.getByText("어떤 점이 가장 불편한가요?").first()).toBeVisible();
     });
+
+    test("문진 상담: 부위는 얼굴표시 화면(아바타 개발 중)에서 고르고, 글로 설명할 수도 있다", async ({ page }) => {
+      await page.goto("/consult");
+      await page.getByRole("button", { name: "면도 후 붉어짐·따가움" }).click();
+
+      await expect(page.getByRole("heading", { name: "어느 부위가 불편한가요?" })).toBeVisible();
+      await expect(page.getByText("개발 중인 서비스예요")).toBeVisible();
+      const next = page.getByRole("button", { name: "다음", exact: true });
+      await expect(next).toBeDisabled();
+      await page.getByRole("button", { name: "기타", exact: true }).click();
+      await expect(next).toBeDisabled(); // 기타만으로는 AI에 보낼 부위가 없다
+      await page.getByRole("button", { name: "왼 턱선" }).click();
+      await page.getByRole("button", { name: "목", exact: true }).click();
+      await next.click();
+
+      await expect(page.getByText("처음 생긴 때는 언제인가요?")).toBeVisible();
+      await expect(page.getByText("기타, 왼 턱선, 목")).toBeVisible();
+    });
+
+    test("문진 상담: 글로 설명할게요를 누르면 대화로 부위를 고른다", async ({ page }) => {
+      await page.goto("/consult");
+      await page.getByRole("button", { name: "여드름·뾰루지" }).click();
+      await page.getByRole("button", { name: "글로 설명할게요" }).click();
+      await expect(page.getByText("어디가 불편한가요?")).toBeVisible();
+      await expect(page.getByRole("button", { name: "눈가" })).toBeVisible();
+    });
   });
 
   test("AI 채팅: 지난 질문과 마크다운 답변(제목·목록·강조)", async ({ page }) => {
